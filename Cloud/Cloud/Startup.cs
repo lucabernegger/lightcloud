@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Cloud.Models;
 
 namespace Cloud
 {
@@ -24,6 +25,7 @@ namespace Cloud
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddRazorPages();
+            services.AddDbContext<ApplicationDbContext>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -51,6 +53,24 @@ namespace Cloud
             {
                 endpoints.MapRazorPages();
             });
+
+            /*var x = FileMethods.DirSearch("Data");
+            using var db = new ApplicationDbContext();
+            int id = 0;
+            foreach (var fileInfo in x)
+            {
+                db.Files.Add(new()
+                {
+                    FileHash = fileInfo.Name.GetHashCode().ToString(),
+                    FileIdentifier = $"{id}_{fileInfo.Name}_{fileInfo.Name.GetHashCode()}",
+                    Modified = fileInfo.LastWriteTime,
+                    Path = "/1/",
+                    Size = "0"
+                });
+                id++;
+            }
+
+            db.SaveChanges();   */
         }
     }
 }
