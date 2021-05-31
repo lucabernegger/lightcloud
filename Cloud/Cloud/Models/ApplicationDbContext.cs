@@ -9,6 +9,7 @@ namespace Cloud.Models
     public class ApplicationDbContext : DbContext
     {
         public DbSet<FileScheme> Files { get; set; }
+        public DbSet<User> Users { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder options)
             => options.UseSqlite(@"Data Source=data.db");
