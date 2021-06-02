@@ -40,5 +40,13 @@ namespace Cloud.Pages
                 await UploadedFile.CopyToAsync(stream);
             }
         }
+
+        public async Task<IActionResult> OnGetDownload(string path)
+        {
+            var user = await User.GetUser();
+            var file = System.IO.File.Open(@$"{_env.ContentRootPath}/Data/{user.Id}/{path}", FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+            return File(file, "application/" + System.IO.Path.GetExtension(System.IO.Path.GetExtension(path)), System.IO.Path.GetFileName(path));
+
+        }
     }
 }
