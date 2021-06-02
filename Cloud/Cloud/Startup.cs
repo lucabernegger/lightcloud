@@ -79,13 +79,14 @@ namespace Cloud
             app.UseTus(httpContext => new DefaultTusConfiguration
             {
                 // c:\tusfiles is where to store files
-                Store = new TusDiskStore(@"F:\Repos\cloud\Cloud\Cloud\tmp"),
+                Store = new TusDiskStore(@"F:\Repos\cloud\Cloud\Cloud\tmp",true),
                 // On what url should we listen for uploads?
                 UrlPath = "/upload",
                 Events = new Events
                 {
                     OnFileCompleteAsync = async eventContext =>
                     {
+
                         ITusFile file = await eventContext.GetFileAsync();
                         await FileUploadCompleted(file,env);
                     }
