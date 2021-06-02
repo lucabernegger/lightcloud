@@ -26,7 +26,7 @@
 <button type="button" class="btn btn-primary" data-mdb-toggle="modal" data-mdb-target="#newFolderModal">
     New Folder
 </button>
-<table class="table table-hover table-responsive" style="font-size: 1.2em" >
+<table class="table table-hover table-responsive" style="font-size: 1.2em">
     <thead>
         <tr>
             <td>Name</td>
@@ -36,10 +36,13 @@
         </tr>
     </thead>
     <tbody>
+        @{
+            var i = 0;
+        }
         @foreach (var dir in Directory.GetDirectories(currentPath))
         {
             var info = new DirectoryInfo(dir);
-            var path = System.IO.Path.GetRelativePath(_env.ContentRootPath+"/Data/"+user.Id+"/", dir);
+            var path = System.IO.Path.GetRelativePath(_env.ContentRootPath + "/Data/" + user.Id + "/", dir);
             <tr>
                 <td>
                     <span class="ficon">
@@ -49,27 +52,61 @@
                         </a>
                     </span>
                 </td>
-                <td></td>
+                <td>
+                    <a class="d-flex align-items-center"
+                       href="#"
+                       id="navbarDropdownMenuLink"
+                       role="button"
+                       data-mdb-toggle="dropdown"
+                       aria-expanded="false">
+                        <i class="fas fa-ellipsis-h"></i>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end "
+                        aria-labelledby="navbarDropdownMenuLink" style="background: #013a63 !important">
+                        <li>
+                            <a class="dropdown-item text-white nohover" asp-page-handler="DeleteFolder" asp-route-path="@path" asp-route-fileName="@info.Name"><i class="fas fa-trash text-danger"></i> Delete</a>
+                        </li>
+                    </ul>
+                </td>
                 <td>-</td>
                 <td>@info.LastWriteTime.ToShortDateString()</td>
             </tr>
         }
+        @{ i = 0; }
         @foreach (var file in Directory.GetFiles(currentPath))
         {
             var info = new FileInfo(file);
-            var path = System.IO.Path.GetRelativePath(_env.ContentRootPath+"/Data/"+user.Id+"/", file);
+            var path = System.IO.Path.GetRelativePath(_env.ContentRootPath + "/Data/" + user.Id + "/", file);
 
             <tr>
-                <td><span class="ficon">
-                    <a asp-route-path="@path" asp-page-handler="Download" class="ficon">
-                        <img src="https://raw.githubusercontent.com/microsoft/fluentui-system-icons/master/assets/Document/SVG/ic_fluent_document_32_regular.svg" />
-                        @info.Name
+                <td>
+                    <span class="ficon">
+                        <a asp-route-path="@path" asp-page-handler="Download" class="ficon">
+                            <img src="https://raw.githubusercontent.com/microsoft/fluentui-system-icons/master/assets/Document/SVG/ic_fluent_document_32_regular.svg" />
+                            @info.Name
+                        </a>
+                    </span>
+                </td>
+                <td>
+                    <a class="d-flex align-items-center"
+                       href="#"
+                       id="navbarDropdownMenuLink"
+                       role="button"
+                       data-mdb-toggle="dropdown"
+                       aria-expanded="false">
+                        <i class="fas fa-ellipsis-h"></i>
                     </a>
-                </span></td>
-                <td></td>
+                    <ul class="dropdown-menu dropdown-menu-end "
+                        aria-labelledby="navbarDropdownMenuLink" style="background: #013a63 !important">
+                        <li>
+                            <a class="dropdown-item text-white nohover" asp-page-handler="DeleteFile" asp-route-path="@path" asp-route-fileName="@info.Name"><i class="fas fa-trash text-danger"></i> Delete</a>
+                        </li>
+                    </ul>
+                </td>
                 <td>@FileMethods.BytesToString(info.Length)</td>
                 <td>@info.LastWriteTime.ToShortDateString()</td>
             </tr>
+            i++;
         }
     </tbody>
 </table>
@@ -105,7 +142,8 @@
                     <button type="button" class="btn-close" data-mdb-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <input type="text" name="foldername" class="form-control"/>
+                    <label for="fileName">Foldername</label>
+                    <input type="text" name="foldername" id="fileName" class="form-control" />
                     <input type="hidden" name="Path" value="@Model.Path" />
                 </div>
                 <div class="modal-footer">

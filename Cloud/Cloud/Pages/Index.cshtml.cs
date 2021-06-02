@@ -19,10 +19,9 @@ namespace Cloud.Pages
         private readonly ILogger<IndexModel> _logger;
         private readonly IHostEnvironment _env;
 
-            [BindProperty(SupportsGet = true)] public string Path { get; set; } = "" ; //TODO: Hardcoded path
+        [BindProperty(SupportsGet = true)] public string Path { get; set; } = "" ; 
 
-        [BindProperty]
-        public IFormFile[] UploadedFiles { get; set; }
+        [BindProperty] public IFormFile[] UploadedFiles { get; set; }
 
         public IndexModel(ILogger<IndexModel> logger,IHostEnvironment env)
         {
@@ -54,6 +53,22 @@ namespace Cloud.Pages
             var user = await User.GetUser();
             var file = System.IO.File.Open(@$"{_env.ContentRootPath}/Data/{user.Id}/{path}", FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
             return File(file, "application/" + System.IO.Path.GetExtension(System.IO.Path.GetExtension(path)), System.IO.Path.GetFileName(path));
+
+        }
+
+        public async Task<IActionResult> OnGetDeleteFile(string fileName)
+        {
+            var user = await User.GetUser();
+            string targetFileName = $"{_env.ContentRootPath}/Data/{user.Id}/{Path}";
+            System.IO.File.Delete(targetFileName);
+            return Redirect($"/Index");
+        }
+        public async Task<IActionResult> OnGetDeleteFolder(string fileName)
+        {
+            var user = await User.GetUser();
+            string targetFileName = $"{_env.ContentRootPath}/Data/{user.Id}/{Path}";
+            System.IO.Directory.Delete(targetFileName,true);
+            return Redirect($"/Index");
 
         }
     }
