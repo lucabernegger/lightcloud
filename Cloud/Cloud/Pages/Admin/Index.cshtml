@@ -6,45 +6,92 @@
 @inject ApplicationDbContext db;
 @inject IHostEnvironment _env;
 <h3 class="text-center mt-3">Users</h3>
+<button type="button" class="btn btn-primary" data-mdb-toggle="modal" data-mdb-target="#addUserModal">
+    <i class="fas fa-user-plus"></i> Add User
+</button>
 <table class="table table-hover table-responsive mt-3" style="font-size: 1.2em">
     <thead>
-        <tr>
-            <td>Id</td>
-            <td>Name</td>
-            <td></td>
-
-            <td>Storage</td>
-            <td>Last Login</td>
-        </tr>
+    <tr>
+        <td>Id</td>
+        <td>Name</td>
+        <td></td>
+        <td>Storage</td>
+        <td>Last Login</td>
+    </tr>
     </thead>
     <tbody>
-        @foreach (var user in db.Users.ToList())
-        {
-            var usedStorage = new DirectoryInfo(_env.ContentRootPath + "/Data/" + user.Id + "/").GetSizeOfDirectory();
-            <tr>
-                <td>@user.Id</td>
-                <td>@user.Name</td>
-                <td>
-                    <a href="#"
-                       id="navbarDropdownMenuLink"
-                       role="button"
-                       data-mdb-toggle="dropdown"
-                       aria-expanded="false"
-                       style="line-height: 100%; vertical-align: middle;">
-                        <i class="fas fa-ellipsis-h"></i>
-                    </a>
-                    <ul class="dropdown-menu dropdown-menu-end"
-                        aria-labelledby="navbarDropdownMenuLink" style="background: #013a63 !important">
-                        <li>
-                            <a class="dropdown-item text-white nohover" asp-page="EditUser" asp-route-Id="@user.Id"><i class="fas fa-user-edit"></i> Edit</a>
-                            <a class="dropdown-item text-white nohover" asp-page="DeleteUser" asp-route-Id="@user.Id"><i class="fas fa-user-times text-danger"></i> Delete</a>
-                        </li>
-                    </ul>
-                </td>
-                <td>@FileMethods.BytesToString(usedStorage)/@FileMethods.BytesToString(user.MaxFileBytes)</td>
-                <td>@user.LastLogin.ToShortDateString()</td>
-
-            </tr>
-        }
+    @foreach (var user in db.Users.ToList())
+    {
+        var usedStorage = new DirectoryInfo(_env.ContentRootPath + "/Data/" + user.Id + "/").GetSizeOfDirectory();
+        <tr>
+            <td>@user.Id</td>
+            <td>@user.Name</td>
+            <td>
+                <a href="#"
+                   id="navbarDropdownMenuLink"
+                   role="button"
+                   data-mdb-toggle="dropdown"
+                   aria-expanded="false"
+                   style="line-height: 100%; vertical-align: middle;">
+                    <i class="fas fa-ellipsis-h"></i>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end"
+                    aria-labelledby="navbarDropdownMenuLink" style="background: #013a63 !important">
+                    <li>
+                        <a class="dropdown-item text-white nohover" asp-page="EditUser" asp-route-Id="@user.Id"><i class="fas fa-user-edit"></i> Edit</a>
+                        <a class="dropdown-item text-white nohover" asp-page-handler="DeleteUser" asp-route-Id="@user.Id"><i class="fas fa-user-times text-danger"></i> Delete</a>
+                    </li>
+                </ul>
+            </td>
+            <td>@FileMethods.BytesToString(usedStorage)/@FileMethods.BytesToString(user.MaxFileBytes)</td>
+            <td>@user.LastLogin.ToShortDateString()</td>
+        </tr>
+    }
     </tbody>
 </table>
+<div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="addUserModalLabel" style="display: none;" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <form method="post" asp-page-handler="AddUser">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="newFolderaddUserModalLabelModalLabel">Add User</h5>
+                    <button type="button" class="btn-close" data-mdb-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group mt-3">
+                        <label for="name">Name</label>
+                        <input type="text" class="form-control" id="name" asp-for="Data.Name"/>
+                        <label for="isAdmin">Admin</label>
+                        <select class="form-control" id="isAdmin" asp-for="Data.Admin">
+                            <option value="0">User</option>
+                            <option value="1">Admin</option>
+                        </select>
+                    </div>
+                    <hr/>
+
+                    <div class="form-group mt-3">
+                        <label for="maxStorage">Max Storage (GB)</label>
+                        <input type="number" class="form-control" id="maxStorage" asp-for="Data.MaxStorage"/>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-mdb-dismiss="modal">
+                        Close
+                    </button>
+                    <button type="submit" class="btn btn-primary">Add</button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
+@section Scripts
+{
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('addUser_success')) {
+            toastr.success(urlParams.get('addUser_success'), { timeOut: 60000 });
+            window.history.replaceState(null, null, window.location.pathname);
+        }
+    </script>
+}

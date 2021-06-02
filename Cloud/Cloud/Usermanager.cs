@@ -17,12 +17,10 @@ namespace Cloud
         {
             using var db = new ApplicationDbContext();
             var user = db.Users.FirstOrDefault(u => u.Name == email);
-            Debug.WriteLine("11");
             if (user is null)
             {
                 return false;
             }
-            Debug.WriteLine("22");
 
             string dbpassword = user.Password;
             string hashed = Convert.ToBase64String(KeyDerivation.Pbkdf2(
