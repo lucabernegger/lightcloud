@@ -29,7 +29,7 @@ namespace Cloud.Pages
             _env = env;
         }
 
-        public async Task OnPostUpload()
+        /*public async Task OnPostUpload()
         {
             var user = await User.GetUser();
             foreach (var file in UploadedFiles)
@@ -41,7 +41,7 @@ namespace Cloud.Pages
                 }
             }
 
-        }
+        }  */
         public async Task OnPostCreateFolder(string folderName)
         {
             var user = await User.GetUser();
