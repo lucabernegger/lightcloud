@@ -62,31 +62,34 @@
                 <!-- Collapsible wrapper -->
                 <!-- Right elements -->
                 <div class="d-flex align-items-center">
-
-                    <!-- Avatar -->
-                    <a class="dropdown-toggle d-flex align-items-center text-white"
-                       href="#"
-                       id="navbarDropdownMenuLink"
-                       role="button"
-                       data-mdb-toggle="dropdown"
-                       aria-expanded="false">
-                        <i class="fas fa-user-circle text-white" style="font-size: 25px"></i>
-                    </a>
-                    <ul class="dropdown-menu dropdown-menu-end "
-                        aria-labelledby="navbarDropdownMenuLink" style="background: #013a63 !important">
-                        <li>
-                            <a class="dropdown-item text-white nohover" href="#">Settings</a>
-                        </li>
-                        <li>
-                            <a class="dropdown-item text-white nohover" href="#">Logout</a>
-                        </li>
-                        @if (user is not null && user.IsAdmin)
-                        {
+                    @if (user is not null)
+                    {
+                        <!-- Avatar -->
+                        <a class="dropdown-toggle d-flex align-items-center text-white"
+                           href="#"
+                           id="navbarDropdownMenuLink"
+                           role="button"
+                           data-mdb-toggle="dropdown"
+                           aria-expanded="false">
+                            <i class="fas fa-user-circle text-white" style="font-size: 25px"></i>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end "
+                            aria-labelledby="navbarDropdownMenuLink" style="background: #013a63 !important">
                             <li>
-                                <a class="dropdown-item text-white nohover" asp-page="/Admin/Index">Admin</a>
+                                <a class="dropdown-item text-white nohover" asp-page="/UserSettings">Settings</a>
                             </li>
-                        }
-                    </ul>
+                            @if (user.IsAdmin)
+                            {
+                                <li>
+                                    <a class="dropdown-item text-white nohover" asp-page="/Admin/Index">Admin</a>
+                                </li>
+                            }
+                            <li>
+                                <a class="dropdown-item text-white nohover" href="/Logout">Logout</a>
+                            </li>
+                        </ul>
+                    }
+
                 </div>
                 <!-- Right elements -->
             </div>
@@ -104,9 +107,9 @@
     @*<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
         <script src="~/js/site.js" asp-append-version="true"></script>
         <script src="/lib/tabler/tabler.min.js"></script*@
-<script type="text/javascript"
-        src="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/3.5.0/mdb.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js" integrity="sha512-VEd+nq25CkR676O+pLBnDW09R7VQX9Mdiij052gVCp5yVH3jGtH70Ho/UUv4mJDsEdTvqRCFZg0NKGiojGnUCw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script type="text/javascript"
+            src="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/3.5.0/mdb.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js" integrity="sha512-VEd+nq25CkR676O+pLBnDW09R7VQX9Mdiij052gVCp5yVH3jGtH70Ho/UUv4mJDsEdTvqRCFZg0NKGiojGnUCw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

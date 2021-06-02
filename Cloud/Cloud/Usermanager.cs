@@ -16,7 +16,7 @@ namespace Cloud
         public static bool IsValid(string email, string password)
         {
             using var db = new ApplicationDbContext();
-            var user = db.Users.FirstOrDefault(u => u.Name == email);
+            var user = db.Users.FirstOrDefault(u => u.Name.Equals(email,StringComparison.InvariantCultureIgnoreCase));
             if (user is null)
             {
                 return false;
@@ -29,7 +29,6 @@ namespace Cloud
                 prf: KeyDerivationPrf.HMACSHA1,
                 iterationCount: 10000,
                 numBytesRequested: 256 / 8));
-            Debug.WriteLine(dbpassword.Equals(hashed));
             return dbpassword.Equals(hashed);
         }
 

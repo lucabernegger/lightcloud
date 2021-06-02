@@ -1,0 +1,22 @@
+﻿@page
+@model Cloud.Pages.UserSettingsModel
+@{
+}
+<div class="card mt-3" style="background: #eb9c0a">
+    <div class="card-header"><h4>Set Password</h4></div>
+    <div class="card-body">
+        <form method="post" asp-page-handler="SetPassword">
+            <div class="form-group">
+                <label for="oldPassword">Current password</label>
+                <input type="password" id="oldPassword" class="form-control" asp-for="SetPasswordData.OldPassword"/>
+
+                <label for="newPassword">New Password</label>
+                <input type="password" id="newPassword" class="form-control" asp-for="SetPasswordData.NewPassword"/>
+
+                <label for="newPasswordRepeat">Repeat Password</label>
+                <input type="password" id="newPasswordRepeat" class="form-control" asp-for="SetPasswordData.NewPasswordRepeat"/>
+            </div>
+            <button type="submit" class="btn btn-primary w-100 mt-3">Save</button>
+        </form>
+    </div>
+</div>

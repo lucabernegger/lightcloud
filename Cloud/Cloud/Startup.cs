@@ -58,8 +58,9 @@ namespace Cloud
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapRazorPages();
+                endpoints.MapControllers();
             });
-            UserManager.SetAdmin(1, true);
+            //UserManager.SetAdmin(1, true);
             /*var x = FileMethods.DirSearch("Data");
             using var db = new ApplicationDbContext();
             int id = 0;
