@@ -88,6 +88,13 @@ namespace Cloud
             user.Salt = hashedPassword[1];
             await db.SaveChangesAsync();
         }
+        public static async Task SetAdmin(int id,bool toggle)
+        {
+            using var db = new ApplicationDbContext();
+            var user = await db.Users.FindAsync(id);
+            user.IsAdmin = toggle;
+            await db.SaveChangesAsync();
+        }
 
         public static async Task SetNewName(int id, string name)
         {

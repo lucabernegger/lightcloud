@@ -1,4 +1,9 @@
-﻿<!DOCTYPE html>
+﻿@using Cloud.Models
+@{
+    User user = null;
+    user = await User.GetUser();
+}
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -49,7 +54,7 @@
                         <li class="nav-item">
                             <a class="nav-link text-white" href="#">Dashboard</a>
                         </li>
-   
+
                     </ul>
                     <!-- Left links -->
                 </div>
@@ -74,6 +79,12 @@
                         <li>
                             <a class="dropdown-item text-white nohover" href="#">Logout</a>
                         </li>
+                        @if (user is not null && user.IsAdmin)
+                        {
+                            <li>
+                                <a class="dropdown-item text-white nohover" asp-page="/Admin/Index">Admin</a>
+                            </li>
+                        }
                     </ul>
                 </div>
                 <!-- Right elements -->
@@ -92,10 +103,8 @@
     @*<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
         <script src="~/js/site.js" asp-append-version="true"></script>
         <script src="/lib/tabler/tabler.min.js"></script*@
-<script
-    type="text/javascript"
-    src="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/3.5.0/mdb.min.js"
-></script>
+    <script type="text/javascript"
+            src="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/3.5.0/mdb.min.js"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

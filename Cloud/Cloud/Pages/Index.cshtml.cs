@@ -22,7 +22,7 @@ namespace Cloud.Pages
             [BindProperty(SupportsGet = true)] public string Path { get; set; } = "" ; //TODO: Hardcoded path
 
         [BindProperty]
-        public IFormFile UploadedFile { get; set; }
+        public IFormFile[] UploadedFiles { get; set; }
 
         public IndexModel(ILogger<IndexModel> logger,IHostEnvironment env)
         {
@@ -33,14 +33,22 @@ namespace Cloud.Pages
         public async Task OnPostUpload()
         {
             var user = await User.GetUser();
-            string targetFileName = $"{_env.ContentRootPath}/Data/{user.Id}/{Path}/{UploadedFile.FileName}"; 
-
-            using (var stream = new FileStream(targetFileName, FileMode.Create))
+            foreach (var file in UploadedFiles)
             {
-                await UploadedFile.CopyToAsync(stream);
+                string targetFileName = $"{_env.ContentRootPath}/Data/{user.Id}/{Path}/{file.FileName}";
+                using (var stream = new FileStream(targetFileName, FileMode.Create))
+                {
+                   file.CopyToAsync(stream);
+                }
             }
-        }
 
+        }
+        public async Task OnPostCreateFolder(string folderName)
+        {
+            var user = await User.GetUser();
+            string targetFolderName = $"{_env.ContentRootPath}/Data/{user.Id}/{Path}/{folderName}";
+            Directory.CreateDirectory(targetFolderName);
+        }
         public async Task<IActionResult> OnGetDownload(string path)
         {
             var user = await User.GetUser();

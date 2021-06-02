@@ -1,0 +1,16 @@
+docker run -d --name bitwarden -e ADMIN_TOKEN=aw7ctkgG3h8CjKaCAiiNwPN9a0MkHXLHLG/yHBBd/DQjCZCgbtg5WGU4XGnPjVa2 -v /bw-data/:/data/ -p 85:80 bitwardenrs/server:latest
+docker run -d --name=nc -p 4443:4443 -p 90:443 -v /media/usb/ncdata:/data --name ncpi ownyourbits/nextcloudpi 192.168.0.21  
+docker run -d \
+    --name=nginx-proxy-manager \
+    -p 8181:8181 \
+    -p 8080:8080 \
+    -p 4443:4443 \
+    -v /docker/appdata/nginx-proxy-manager:/config:rw \
+    jlesage/nginx-proxy-manager
+
+
+
+
+
+docker run -d --name bitwarden2 -e SMTP_HOST=mail.lucabernegger.de -e SMTP_FROM=passwort@lucabernegger.de -e SMTP_PORT=465 -e SMTP_USERNAME=passwort -e SMTP_PASSWORT=GkkxpnjGmWZLF -e DOMAIN=https://pw.lucabernegger.de -e ADMIN_TOKEN=aw7ctkgG3h8CjKaCAiiNwPN9a0MkHXLHLG/yHBBd/DQjCZCgbtg5WGU4XGnPjVa2 -v /bw-data/:/data/ -p 85:80 vaultwarden/server:latest
+docker run -d --name bitwarden2 -e SMTP_HOST=mail.lucabernegger.de -e SMTP_FROM=passwort@lucabernegger.de -e SMTP_PORT=465 -e SMTP_USERNAME=passwort -e SMTP_PASSWORT=GkkxpnjGmWZLF -e DOMAIN=https://pw.lucabernegger.de -e ADMIN_TOKEN=aw7ctkgG3h8CjKaCAiiNwPN9a0MkHXLHLG/yHBBd/DQjCZCgbtg5WGU4XGnPjVa2 -v /bw-data/:/data/ -p 85:80 bitwardenrs/server:testing
