@@ -26,6 +26,11 @@
 <button type="button" class="btn btn-primary" data-mdb-toggle="modal" data-mdb-target="#newFolderModal">
     New Folder
 </button>
+<div class="progress mt-2 mb-2" style="height: 2vh;display: none" id="progress1">
+    <div class="progress-bar" style="min-width: 0%;display: none" id="uprogress">
+        
+    </div>
+</div>
 <table class="table table-hover table-responsive" style="font-size: 1.2em">
     <thead>
         <tr>
@@ -164,7 +169,10 @@
         function uploadFile(p, id) {
             $("#fileUploadModal").modal("hide");
             // Get the selected file from the input element
-            var file = document.getElementById("fileUpload").files[0]
+            var file = document.getElementById("fileUpload").files[0];
+            document.getElementById("uprogress").style.display = "block";
+            document.getElementById("progress1").style.display = "block";
+
             // Create a new tus upload
             var upload = new tus.Upload(file, {
                 endpoint: "/upload",
@@ -179,11 +187,13 @@
                     console.log("Failed because: " + error);
                 },
                 onProgress: function(bytesUploaded, bytesTotal) {
-                    var percentage = (bytesUploaded / bytesTotal * 100).toFixed(2);
+                    var percentage = (bytesUploaded / bytesTotal * 100).toFixed(1);
                     console.log(bytesUploaded, bytesTotal, percentage + "%");
+                    document.getElementById("uprogress").style.width = percentage+"%";
+                    document.getElementById("uprogress").innerHTML = "Uploading... (" + percentage+"%)";
                 },
                 onSuccess: function() {
-                    window.location.href = window.location.href;0
+                    window.location.href = window.location.href;
                 }
             })
 
