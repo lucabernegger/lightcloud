@@ -8,7 +8,7 @@
 @inject IHostEnvironment _env;
 @{
     var user = await User.GetUser();
-    ViewData["Title"] = "Home page";
+    ViewData["Title"] = "Dashboard";
     string currentPath = _env.ContentRootPath + "/Data/" + user.Id + "/" + Model.Path;
 
 }
@@ -53,12 +53,12 @@
                     </span>
                 </td>
                 <td>
-                    <a class="d-flex align-items-center"
-                       href="#"
+                    <a href="#"
                        id="navbarDropdownMenuLink"
                        role="button"
                        data-mdb-toggle="dropdown"
-                       aria-expanded="false">
+                       aria-expanded="false"
+                       style="line-height: 100%; vertical-align: middle;">
                         <i class="fas fa-ellipsis-h"></i>
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end "
@@ -68,7 +68,7 @@
                         </li>
                     </ul>
                 </td>
-                <td>-</td>
+                <td>@FileMethods.BytesToString(info.GetSizeOfDirectory())</td>
                 <td>@info.LastWriteTime.ToShortDateString()</td>
             </tr>
         }
@@ -88,12 +88,13 @@
                     </span>
                 </td>
                 <td>
-                    <a class="d-flex align-items-center"
+                    <a
                        href="#"
                        id="navbarDropdownMenuLink"
                        role="button"
                        data-mdb-toggle="dropdown"
-                       aria-expanded="false">
+                       aria-expanded="false"
+                       style="line-height: 100%; vertical-align: middle;">
                         <i class="fas fa-ellipsis-h"></i>
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end "

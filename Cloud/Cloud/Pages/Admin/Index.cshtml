@@ -1,4 +1,50 @@
 ﻿@page
+@using Cloud.Models
+@using Microsoft.Extensions.Hosting
+@using System.IO
 @model Cloud.Pages.Admin.IndexModel
-@{
-}
+@inject ApplicationDbContext db;
+@inject IHostEnvironment _env;
+<h3 class="text-center mt-3">Users</h3>
+<table class="table table-hover table-responsive mt-3" style="font-size: 1.2em">
+    <thead>
+        <tr>
+            <td>Id</td>
+            <td>Name</td>
+            <td></td>
+
+            <td>Storage</td>
+            <td>Last Login</td>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var user in db.Users.ToList())
+        {
+            var usedStorage = new DirectoryInfo(_env.ContentRootPath + "/Data/" + user.Id + "/").GetSizeOfDirectory();
+            <tr>
+                <td>@user.Id</td>
+                <td>@user.Name</td>
+                <td>
+                    <a href="#"
+                       id="navbarDropdownMenuLink"
+                       role="button"
+                       data-mdb-toggle="dropdown"
+                       aria-expanded="false"
+                       style="line-height: 100%; vertical-align: middle;">
+                        <i class="fas fa-ellipsis-h"></i>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end"
+                        aria-labelledby="navbarDropdownMenuLink" style="background: #013a63 !important">
+                        <li>
+                            <a class="dropdown-item text-white nohover" asp-page="EditUser" asp-route-Id="@user.Id"><i class="fas fa-user-edit"></i> Edit</a>
+                            <a class="dropdown-item text-white nohover" asp-page="DeleteUser" asp-route-Id="@user.Id"><i class="fas fa-user-times text-danger"></i> Delete</a>
+                        </li>
+                    </ul>
+                </td>
+                <td>@FileMethods.BytesToString(usedStorage)/@FileMethods.BytesToString(user.MaxFileBytes)</td>
+                <td>@user.LastLogin.ToShortDateString()</td>
+
+            </tr>
+        }
+    </tbody>
+</table>

@@ -1,0 +1,44 @@
+﻿@page
+@using Cloud.Models
+@model Cloud.Pages.Admin.EditUserModel
+@inject ApplicationDbContext db;
+@{
+    var user = await UserManager.GetUserById(Model.Id);
+}
+<style>
+    input[type=checkbox]
+    {
+        /* Double-sized Checkboxes */
+        -ms-transform: scale(2); /* IE */
+        -moz-transform: scale(2); /* FF */
+        -webkit-transform: scale(2); /* Safari and Chrome */
+        -o-transform: scale(2); /* Opera */
+        padding: 10px;
+    }
+</style>
+<div class="card mt-3" style="background: #eb9c0a">
+    <div class="card-body text-white">
+        <form asp-page-handler="UpdateUser">
+            <input type="hidden" value="@Model.Id" asp-for="Data.Id"/>
+            <div class="form-group">
+                <label for="userId">Id</label>
+                <input type="text" class="form-control" id="userId" readonly="readonly" value="@user.Id"/>
+            </div>
+            <hr/>
+            <div class="form-group mt-3">
+                <label for="name">Name</label>
+                <input type="text" class="form-control" id="name" value="@user.Name" asp-for="Data.Name"/>
+                <label for="isAdmin">Admin</label>
+                <select asp-items="@Model.Options" class="form-control" asp- asp-for="Data.Admin" >
+                </select>
+            </div>
+            <hr/>
+
+            <div class="form-group mt-3">
+                <label for="maxStorage">Max Storage (GB)</label>
+                <input type="number" class="form-control" id="maxStorage" value="@FileMethods.ByteToGigabyte(user.MaxFileBytes)" asp-for="Data.MaxStorage"/>
+            </div>
+            <button type="submit" class="btn btn-primary w-100 mt-3">Save</button>
+        </form>
+    </div>
+</div>

@@ -40,7 +40,11 @@ namespace Cloud
             using ApplicationDbContext db = new ApplicationDbContext();
             return db.Users.FirstOrDefault(o => o.Name == email);
         }
-
+        public static Task<User> GetUserById(int id)
+        {
+            using ApplicationDbContext db = new ApplicationDbContext();
+            return db.Users.FirstOrDefaultAsync(o => o.Id == id);
+        }
         public static string[] GenerateHashAndSalt(string password)
         {
             byte[] salt = new byte[128 / 8];
