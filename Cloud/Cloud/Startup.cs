@@ -96,12 +96,15 @@ namespace Cloud
             var user = await UserManager.GetUserById(Convert.ToInt32(meta["uid"].GetString(Encoding.UTF8)));
             using var stream = await file.GetContentAsync(cs);
             string filepath = env.ContentRootPath + "/Data/" + user.Id;
-            using (var fileStream = new FileStream(filepath + "/" + meta["filename"].GetString(Encoding.UTF8), FileMode.Create))
+            var size = new DirectoryInfo(filepath).GetSizeOfDirectory();
+            if (stream.Length + size < user.MaxFileBytes)
             {
-               await stream.CopyToAsync(fileStream);
-               await fileStream.DisposeAsync();
+                using (var fileStream = new FileStream(filepath + "/" + meta["filename"].GetString(Encoding.UTF8), FileMode.Create))
+                {
+                    await stream.CopyToAsync(fileStream);
+                    await fileStream.DisposeAsync();
+                }
             }
-
             await stream.DisposeAsync();
         }
     }
