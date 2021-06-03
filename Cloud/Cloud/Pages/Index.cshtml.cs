@@ -29,19 +29,6 @@ namespace Cloud.Pages
             _env = env;
         }
 
-        /*public async Task OnPostUpload()
-        {
-            var user = await User.GetUser();
-            foreach (var file in UploadedFiles)
-            {
-                string targetFileName = $"{_env.ContentRootPath}/Data/{user.Id}/{Path}/{file.FileName}";
-                using (var stream = new FileStream(targetFileName, FileMode.Create))
-                {
-                   file.CopyToAsync(stream);
-                }
-            }
-
-        }  */
         public async Task OnPostCreateFolder(string folderName)
         {
             var user = await User.GetUser();
@@ -50,8 +37,13 @@ namespace Cloud.Pages
         }
         public async Task<IActionResult> OnGetDownload(string path)
         {
+            var fileExtensionToOpenText = new[] {".txt", ".json", ".lua", ".cs", ".yml"};
             var user = await User.GetUser();
             var file = System.IO.File.Open(@$"{_env.ContentRootPath}/Data/{user.Id}/{path}", FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+            if (fileExtensionToOpenText.Contains(System.IO.Path.GetExtension(path)))
+            {
+                return Content(System.IO.File.ReadAllText(@$"{_env.ContentRootPath}/Data/{user.Id}/{path}"));
+            }
             return File(file, "application/" + System.IO.Path.GetExtension(System.IO.Path.GetExtension(path)), System.IO.Path.GetFileName(path));
 
         }
