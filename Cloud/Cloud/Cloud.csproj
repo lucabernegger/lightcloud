@@ -4,7 +4,9 @@
     <TargetFramework>net5.0</TargetFramework>
     <CopyRefAssembliesToPublishDirectory>false</CopyRefAssembliesToPublishDirectory>
   </PropertyGroup>
-
+  <PropertyGroup>
+    <ServerGarbageCollection>false</ServerGarbageCollection>
+  </PropertyGroup>
   <ItemGroup>
     <Compile Remove="Data\1\**" />
     <Content Remove="Data\1\**" />

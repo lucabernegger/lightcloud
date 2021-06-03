@@ -10,6 +10,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Cloud.Models;
@@ -86,46 +88,29 @@ namespace Cloud
                 {
                     OnFileCompleteAsync = async eventContext =>
                     {
-
                         ITusFile file = await eventContext.GetFileAsync();
-                        await FileUploadCompleted(file,env);
+                        
+                        await FileUploadCompleted(file, env, eventContext.CancellationToken);
+                        var terminationStore = (ITusTerminationStore)eventContext.Store;
+                        await terminationStore.DeleteFileAsync(file.Id, eventContext.CancellationToken);
                     }
                 }
             });
-            //UserManager.SetAdmin(1, true);
-            /*var x = FileMethods.DirSearch("Data");
-            using var db = new ApplicationDbContext();
-            int id = 0;
-            foreach (var fileInfo in x)
-            {
-                db.Files.Add(new()
-                {
-                    FileHash = fileInfo.Name.GetHashCode().ToString(),
-                    FileIdentifier = $"{id}_{fileInfo.Name}_{fileInfo.Name.GetHashCode()}",
-                    Modified = fileInfo.LastWriteTime,
-                    Path = "/1/",
-                    Size = "0"
-                });
-                id++;
-            }
-
-            db.SaveChanges();   */
         }
 
-        private async Task FileUploadCompleted(ITusFile file,IWebHostEnvironment _env)
+        private async Task FileUploadCompleted(ITusFile file,IWebHostEnvironment env,CancellationToken cs)
         {
-            var meta =await file.GetMetadataAsync(new CancellationToken());
+            var meta = await file.GetMetadataAsync(cs);
             var user = await UserManager.GetUserById(Convert.ToInt32(meta["uid"].GetString(Encoding.UTF8)));
-
-        
-            var stream = await file.GetContentAsync(new CancellationToken());
-            string filepath = _env.ContentRootPath + "/Data/" + user.Id;
-            Debug.WriteLine(filepath + "/" + meta["filename"].GetString(Encoding.UTF8));
+            using var stream = await file.GetContentAsync(cs);
+            string filepath = env.ContentRootPath + "/Data/" + user.Id;
             using (var fileStream = new FileStream(filepath + "/" + meta["filename"].GetString(Encoding.UTF8), FileMode.Create))
             {
                await stream.CopyToAsync(fileStream);
+               await fileStream.DisposeAsync();
             }
-            
+
+            await stream.DisposeAsync();
         }
     }
 }

@@ -28,10 +28,10 @@
 </button>
 <div class="progress mt-2 mb-2" style="height: 2vh;display: none" id="progress1">
     <div class="progress-bar" style="min-width: 0%;display: none" id="uprogress">
-        
+
     </div>
 </div>
-<table class="table table-hover table-responsive" style="font-size: 1.2em">
+<table class="table table-hover table-responsive" style="font-size: 1.2em" >
     <thead>
         <tr>
             <td>Name</td>
@@ -93,8 +93,7 @@
                     </span>
                 </td>
                 <td>
-                    <a
-                       href="#"
+                    <a href="#"
                        id="navbarDropdownMenuLink"
                        role="button"
                        data-mdb-toggle="dropdown"
@@ -119,20 +118,12 @@
 <div class="modal fade" id="fileUploadModal" tabindex="-1" aria-labelledby="fileUploadModalLabel" style="display: none;" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="fileUploadModalLabel">Upload</h5>
-                    <button type="button" class="btn-close" data-mdb-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <input class="form-control" type="file" asp-for="UploadedFiles" multiple="true" id="fileUpload">
-                    <input type="hidden" name="Path" value="@Model.Path" />
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-mdb-dismiss="modal">
-                        Close
-                    </button>
-                    <button type="button" class="btn btn-primary" onclick="uploadFile('@Model.Path',@user.Id)">Upload</button>
-                </div>
+            <div class="modal-header">
+                <h5 class="modal-title" id="fileUploadModalLabel">Upload</h5>
+                <button type="button" class="btn-close" data-mdb-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="uppy-dashboard">
+            </div>
         </div>
     </div>
 </div>
@@ -162,52 +153,39 @@
 </div>
 @section Scripts
 {
-    <script src="https://cdn.jsdelivr.net/npm/tus-js-client@latest/dist/tus.min.js"></script>
+    <link href="https://releases.transloadit.com/uppy/v1.29.1/uppy.min.css" rel="stylesheet">
+
+    <script src="https://releases.transloadit.com/uppy/v1.29.1/uppy.min.js"></script>
+
     <script>
         window.history.replaceState(null, null, window.location.pathname);
-
-        function uploadFile(p, id) {
-            $("#fileUploadModal").modal("hide");
-            // Get the selected file from the input element
-            var file = document.getElementById("fileUpload").files[0];
-            document.getElementById("uprogress").style.display = "block";
-            document.getElementById("progress1").style.display = "block";
-
-            // Create a new tus upload
-            var upload = new tus.Upload(file, {
-                endpoint: "/upload",
-                retryDelays: [0, 3000, 5000, 10000, 20000],
-                metadata: {
-                    filename: file.name,
-                    filetype: file.type,
-                    path: p,
-                    uid:id
-                },
-                onError: function(error) {
-                    console.log("Failed because: " + error);
-                },
-                onProgress: function(bytesUploaded, bytesTotal) {
-                    var percentage = (bytesUploaded / bytesTotal * 100).toFixed(1);
-                    console.log(bytesUploaded, bytesTotal, percentage + "%");
-                    document.getElementById("uprogress").style.width = percentage+"%";
-                    document.getElementById("uprogress").innerHTML = "Uploading... (" + percentage+"%)";
-                },
-                onSuccess: function() {
-                    window.location.href = window.location.href;
-                }
+        var uppy = Uppy.Core()
+            .use(Uppy.Dashboard, {
+                inline: true,
+                target: '#uppy-dashboard'
             })
+            .use(Uppy.Tus, {endpoint: '/upload'})
+        uppy.use(Uppy.ProgressBar, {
+            target: '.progres-bar-uppy',
+            fixed: false,
+            hideAfterFinish: true,
+            proudlyDisplayPoweredByUppy: false,
+            showRemoveButtonAfterComplete: false,
+            showProgressDetails: true,
+            showLinkToFileUploadResult: false,
 
-            // Check if there are any previous uploads to continue.
-            upload.findPreviousUploads().then(function(previousUploads) {
-                // Found previous uploads so we select the first one. 
-                if (previousUploads.length) {
-                    upload.resumeFromPreviousUpload(previousUploads[0])
-                }
-
-                // Start the upload
-                upload.start();
+        })
+        uppy.on('complete',
+            (file,result) => {
+                window.location.href = window.location.href;
             });
-        }
+        uppy.on('file-added', (file) =>{
+            console.log(file);
+            uppy.setFileMeta(file.id, {
+                uid: '@user.Id',
+                path: '@Model.Path'
+            });
+        });
 
     </script>
 }
