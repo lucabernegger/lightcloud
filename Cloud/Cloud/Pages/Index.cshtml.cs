@@ -3,12 +3,14 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.Extensions.Hosting;
 
 namespace Cloud.Pages
@@ -20,8 +22,6 @@ namespace Cloud.Pages
         private readonly IHostEnvironment _env;
 
         [BindProperty(SupportsGet = true)] public string Path { get; set; } = "" ; 
-
-        [BindProperty] public IFormFile[] UploadedFiles { get; set; }
 
         public IndexModel(ILogger<IndexModel> logger,IHostEnvironment env)
         {
@@ -71,5 +71,12 @@ namespace Cloud.Pages
             return Redirect($"/Index");
 
         }
+
+        public PartialViewResult OnGetFilesPartial(string path)
+        {
+            Path = path;
+            return Partial("Shared/_FilesTable", this);
+        }
+
     }
 }

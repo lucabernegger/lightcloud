@@ -3,13 +3,13 @@
 @using System.IO
 @using Microsoft.Extensions.Hosting
 @using System.Diagnostics
+@using System.Text.Encodings.Web
 @model IndexModel
 @inject ApplicationDbContext db;
 @inject IHostEnvironment _env;
 @{
     var user = await User.GetUser();
     ViewData["Title"] = "Dashboard";
-    string currentPath = _env.ContentRootPath + "/Data/" + user.Id + "/" + Model.Path;
 
 }
 
@@ -31,90 +31,7 @@
 
     </div>
 </div>
-<table class="table table-hover table-responsive" style="font-size: 1.2em" >
-    <thead>
-        <tr>
-            <td>Name</td>
-            <td></td>
-            <td>Size</td>
-            <td>Modified</td>
-        </tr>
-    </thead>
-    <tbody>
-        @{
-            var i = 0;
-        }
-        @foreach (var dir in Directory.GetDirectories(currentPath))
-        {
-            var info = new DirectoryInfo(dir);
-            var path = System.IO.Path.GetRelativePath(_env.ContentRootPath + "/Data/" + user.Id + "/", dir);
-            <tr>
-                <td>
-                    <span class="ficon">
-                        <a asp-route-path="@path" class="ficon">
-                            <img src="https://raw.githubusercontent.com/microsoft/fluentui-system-icons/master/assets/Folder/SVG/ic_fluent_folder_32_regular.svg" />
-                            @info.Name
-                        </a>
-                    </span>
-                </td>
-                <td>
-                    <a href="#"
-                       id="navbarDropdownMenuLink"
-                       role="button"
-                       data-mdb-toggle="dropdown"
-                       aria-expanded="false"
-                       style="line-height: 100%; vertical-align: middle;">
-                        <i class="fas fa-ellipsis-h"></i>
-                    </a>
-                    <ul class="dropdown-menu dropdown-menu-end "
-                        aria-labelledby="navbarDropdownMenuLink" style="background: #013a63 !important">
-                        <li>
-                            <a class="dropdown-item text-white nohover" asp-page-handler="DeleteFolder" asp-route-path="@path" asp-route-fileName="@info.Name"><i class="fas fa-trash text-danger"></i> Delete</a>
-                        </li>
-                    </ul>
-                </td>
-                <td>@FileMethods.BytesToString(info.GetSizeOfDirectory())</td>
-                <td>@info.LastWriteTime.ToShortDateString()</td>
-            </tr>
-        }
-        @{ i = 0; }
-        @foreach (var file in Directory.GetFiles(currentPath))
-        {
-            var info = new FileInfo(file);
-            var path = System.IO.Path.GetRelativePath(_env.ContentRootPath + "/Data/" + user.Id + "/", file);
-
-            <tr>
-                <td>
-                    <span class="ficon">
-                        <a asp-route-path="@path" asp-page-handler="Download" class="ficon">
-                            <img src="https://raw.githubusercontent.com/microsoft/fluentui-system-icons/master/assets/Document/SVG/ic_fluent_document_32_regular.svg" />
-                            @info.Name
-                        </a>
-                    </span>
-                </td>
-                <td>
-                    <a href="#"
-                       id="navbarDropdownMenuLink"
-                       role="button"
-                       data-mdb-toggle="dropdown"
-                       aria-expanded="false"
-                       style="line-height: 100%; vertical-align: middle;">
-                        <i class="fas fa-ellipsis-h"></i>
-                    </a>
-                    <ul class="dropdown-menu dropdown-menu-end "
-                        aria-labelledby="navbarDropdownMenuLink" style="background: #013a63 !important">
-                        <li>
-                            <a class="dropdown-item text-white nohover" asp-page-handler="DeleteFile" asp-route-path="@path" asp-route-fileName="@info.Name"><i class="fas fa-trash text-danger"></i> Delete</a>
-                        </li>
-                    </ul>
-                </td>
-                <td>@FileMethods.BytesToString(info.Length)</td>
-                <td>@info.LastWriteTime.ToShortDateString()</td>
-            </tr>
-            i++;
-        }
-    </tbody>
-</table>
+<div id="files_table"></div>
 <div class="modal fade" id="fileUploadModal" tabindex="-1" aria-labelledby="fileUploadModalLabel" style="display: none;" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
@@ -162,22 +79,23 @@
         var uppy = Uppy.Core()
             .use(Uppy.Dashboard, {
                 inline: true,
-                target: '#uppy-dashboard'
+                target: '#uppy-dashboard',
+                hideAfterFinish: true,
+                proudlyDisplayPoweredByUppy: false,
+                showRemoveButtonAfterComplete: false,
+                showProgressDetails: true,
+                showLinkToFileUploadResult: false,
             })
             .use(Uppy.Tus, {endpoint: '/upload'})
         uppy.use(Uppy.ProgressBar, {
             target: '.progres-bar-uppy',
             fixed: false,
-            hideAfterFinish: true,
-            proudlyDisplayPoweredByUppy: false,
-            showRemoveButtonAfterComplete: false,
-            showProgressDetails: true,
-            showLinkToFileUploadResult: false,
-
         })
         uppy.on('complete',
-            (file,result) => {
-                window.location.href = window.location.href;
+            (file, result) => {
+                $("#fileUploadModal").modal("hide")
+                loadFiles();
+                uppy.reset();
             });
         uppy.on('file-added', (file) =>{
             console.log(file);
@@ -186,6 +104,12 @@
                 path: '@Model.Path'
             });
         });
+        function loadFiles() {
+            $.get("/Index", { handler: "FilesPartial", path: "@Model.Path" }).done(function(data) {
+                $('#files_table').html(data);
+            });
+        }
 
+        loadFiles();
     </script>
 }

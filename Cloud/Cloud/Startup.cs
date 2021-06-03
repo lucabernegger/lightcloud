@@ -1,17 +1,11 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Text;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Cloud.Models;
@@ -80,9 +74,7 @@ namespace Cloud
             });
             app.UseTus(httpContext => new DefaultTusConfiguration
             {
-                // c:\tusfiles is where to store files
                 Store = new TusDiskStore(@"F:\Repos\cloud\Cloud\Cloud\tmp",true),
-                // On what url should we listen for uploads?
                 UrlPath = "/upload",
                 Events = new Events
                 {
