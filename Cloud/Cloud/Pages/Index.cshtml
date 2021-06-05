@@ -45,6 +45,30 @@
     </div>
 </div>
 
+<div class="modal fade" id="shareFileModal" tabindex="-1" aria-labelledby="shareFileModalLabel" style="display: none;" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <form method="post" asp-page-handler="ShareFile">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="shareFileModalLabel">Share</h5>
+                    <button type="button" class="btn-close" data-mdb-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="path" id="shareFile" />
+                    <label for="shareExpiry">Expires</label>
+                    <input type="date" name="expiryDate" class="form-control" id="shareExpiry" />
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-mdb-dismiss="modal">
+                        Close
+                    </button>
+                    <button type="submit" class="btn btn-primary">Upload</button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
 <div class="modal fade" id="newFolderModal" tabindex="-1" aria-labelledby="newFolderModalLabel" style="display: none;" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
@@ -71,44 +95,64 @@
 </div>
 @section Scripts
 {
+    <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link href="https://releases.transloadit.com/uppy/v1.29.1/uppy.min.css" rel="stylesheet">
 
     <script src="https://releases.transloadit.com/uppy/v1.29.1/uppy.min.js"></script>
 
     <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('download_link')) {
+            let a = "<a href='" + urlParams.get('download_link') + "'>Link</a><br><input type='text' class='form-control' value='" + urlParams.get('download_link') + "' readonly>";
+            Swal.fire(
+                'Good job!',
+                a,
+                'success'
+            )
+        }
         window.history.replaceState(null, null, window.location.pathname);
         var uppy = Uppy.Core()
-            .use(Uppy.Dashboard, {
-                inline: true,
-                target: '#uppy-dashboard',
-                hideAfterFinish: true,
-                proudlyDisplayPoweredByUppy: false,
-                showRemoveButtonAfterComplete: false,
-                showProgressDetails: true,
-                showLinkToFileUploadResult: false,
+            .use(Uppy.Dashboard,
+                {
+                    inline: true,
+                    target: '#uppy-dashboard',
+                    hideAfterFinish: true,
+                    proudlyDisplayPoweredByUppy: false,
+                    showRemoveButtonAfterComplete: false,
+                    showProgressDetails: true,
+                    showLinkToFileUploadResult: false,
+                })
+            .use(Uppy.Tus, { endpoint: '/upload' })
+        uppy.use(Uppy.ProgressBar,
+            {
+                target: '.progres-bar-uppy',
+                fixed: false,
             })
-            .use(Uppy.Tus, {endpoint: '/upload'})
-        uppy.use(Uppy.ProgressBar, {
-            target: '.progres-bar-uppy',
-            fixed: false,
-        })
         uppy.on('complete',
             (file, result) => {
                 $("#fileUploadModal").modal("hide")
                 loadFiles();
                 uppy.reset();
             });
-        uppy.on('file-added', (file) =>{
-            console.log(file);
-            uppy.setFileMeta(file.id, {
-                uid: '@user.Id',
-                path: '@Model.Path'
+        uppy.on('file-added',
+            (file) => {
+                console.log(file);
+                uppy.setFileMeta(file.id,
+                    {
+                        uid: '@user.Id',
+                        path: '@Model.Path'
+                    });
             });
-        });
+
         function loadFiles() {
             $.get("/Index", { handler: "FilesPartial", path: "@Model.Path" }).done(function(data) {
                 $('#files_table').html(data);
             });
+        }
+
+        function showShareModal(file) {
+            $("#shareFile").val(file);
+            $("#shareFileModal").modal("show");
         }
 
         loadFiles();

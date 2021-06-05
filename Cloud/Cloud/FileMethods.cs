@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading.Tasks;
 using Cloud.Models;
 using Microsoft.AspNetCore.Mvc.Formatters;
@@ -65,6 +68,25 @@ namespace Cloud
             }
 
             return list;
+        }
+
+        public static string Sha256(string text)
+        {
+            var crypt = new SHA256Managed();
+            string hash = String.Empty;
+            byte[] crypto = crypt.ComputeHash(Encoding.ASCII.GetBytes(text));
+            foreach (byte theByte in crypto)
+            {
+                hash += theByte.ToString("x2");
+            }
+            return hash;
+        }
+
+        public static bool IsFileShared(string path,int userid)
+        {
+            using var db = new ApplicationDbContext();
+            string p = @$"{userid}/{path}";
+            return db.Shares.Any(o => o.File == p);
         }
     }
 }

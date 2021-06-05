@@ -16,7 +16,7 @@ namespace Cloud
         public static bool IsValid(string email, string password)
         {
             using var db = new ApplicationDbContext();
-            var user = db.Users.FirstOrDefault(u => u.Name.Equals(email,StringComparison.InvariantCultureIgnoreCase));
+            var user = db.Users.FirstOrDefault(u => u.Name.Equals(email));
             if (user is null)
             {
                 return false;
@@ -34,12 +34,12 @@ namespace Cloud
 
         public static User GetUserFromName(string email)
         {
-            using ApplicationDbContext db = new ApplicationDbContext();
+            using ApplicationDbContext db = new ();
             return db.Users.FirstOrDefault(o => o.Name == email);
         }
         public static Task<User> GetUserById(int id)
         {
-            using ApplicationDbContext db = new ApplicationDbContext();
+            using ApplicationDbContext db = new();
             return db.Users.FirstOrDefaultAsync(o => o.Id == id);
         }
         public static string[] GenerateHashAndSalt(string password)
@@ -59,7 +59,7 @@ namespace Cloud
             return new string[] { hashed, Convert.ToBase64String(salt) };
         }
 
-        private static readonly Random random = new Random();
+        private static readonly Random random = new();
 
         public static string GenerateRandomPassword()
         {

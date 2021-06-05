@@ -29,6 +29,11 @@ namespace Cloud
 
         public IConfiguration Configuration { get; }
 
+        public static Settings Settings { get; } = new Settings()
+        {
+            BaseDomain = "https://localhost:44395/"
+        };
+
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {

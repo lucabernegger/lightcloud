@@ -45,6 +45,7 @@
                         <li>
                             <a class="dropdown-item text-white nohover" asp-page-handler="DeleteFolder" asp-route-path="@path" asp-route-fileName="@info.Name"><i class="fas fa-trash text-danger"></i> Delete</a>
                         </li>
+
                     </ul>
                 </td>
                 <td>@FileMethods.BytesToString(info.GetSizeOfDirectory())</td>
@@ -80,6 +81,19 @@
                         <li>
                             <a class="dropdown-item text-white nohover" asp-page-handler="DeleteFile" asp-route-path="@path" asp-route-fileName="@info.Name"><i class="fas fa-trash text-danger"></i> Delete</a>
                         </li>
+                        @if (!FileMethods.IsFileShared(path,user.Id))
+                        {
+                            <li>
+                                <a class="dropdown-item text-white nohover" onclick="showShareModal('@path')"><i class="fas fa-share-alt-square text-cyan"></i> Share</a>
+                            </li>
+                        }
+                        else
+                        {
+                            <li>
+                                <a class="dropdown-item text-white nohover" asp-page-handler="StopShare" asp-route-path="@path"><i class="fas fa-share-alt-square text-warning"></i> Stop Share</a>
+                            </li>
+                        }
+
                     </ul>
                 </td>
                 <td>@FileMethods.BytesToString(info.Length)</td>
