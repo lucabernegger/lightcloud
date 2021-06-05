@@ -92,7 +92,7 @@ namespace Cloud
         {
             using var db = new ApplicationDbContext();
             string p = @$"{userid}/{path}";
-            return Startup.Settings.BaseDomain + "Share/" + db.Shares.FirstOrDefault(o=>o.File == p).ShareLink;
+            return Startup.Settings.BaseDomain + "Share/" + db.Shares.FirstOrDefault(o=>o.File == p)?.ShareLink;
         }
     }
 }

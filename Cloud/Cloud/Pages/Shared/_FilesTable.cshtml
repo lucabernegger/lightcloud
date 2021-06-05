@@ -46,7 +46,6 @@
                         <li>
                             <a class="dropdown-item text-white nohover" asp-page-handler="DeleteFolder" asp-route-path="@path" asp-route-fileName="@info.Name"><i class="fas fa-trash text-danger"></i> Delete</a>
                         </li>
-
                     </ul>
                 </td>
                 <td>@FileMethods.BytesToString(info.GetSizeOfDirectory())</td>

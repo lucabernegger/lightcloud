@@ -31,6 +31,12 @@ namespace Cloud.Controllers
             var dbFile = _db.Shares.FirstOrDefault(o => o.ShareLink == hash);
             if (dbFile is not null)
             {
+                if (dbFile.ExpiryDate < DateTime.Now)
+                {
+                    _db.Shares.Remove(dbFile);
+                    _db.SaveChanges();
+                    return NotFound("File not found");
+                }
                 var file = System.IO.File.Open($"{_env.ContentRootPath}/Data/{dbFile.File}", FileMode.Open, FileAccess.Read, System.IO.FileShare.ReadWrite);
 
                 return File(file, "application/" + System.IO.Path.GetExtension(System.IO.Path.GetExtension(dbFile.File)), System.IO.Path.GetFileName(dbFile.File));
