@@ -88,5 +88,11 @@ namespace Cloud
             string p = @$"{userid}/{path}";
             return db.Shares.Any(o => o.File == p);
         }
+        public static string GetSharedLink(string path, int userid)
+        {
+            using var db = new ApplicationDbContext();
+            string p = @$"{userid}/{path}";
+            return Startup.Settings.BaseDomain + "Share/" + db.Shares.FirstOrDefault(o=>o.File == p).ShareLink;
+        }
     }
 }
