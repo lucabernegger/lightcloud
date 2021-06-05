@@ -33,7 +33,6 @@ namespace Cloud.Pages.Admin
                 await _db.SaveChangesAsync();
             }
 
-            
 
             return Redirect("/Admin/Index");
         }
