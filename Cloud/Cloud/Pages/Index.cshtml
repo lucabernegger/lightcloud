@@ -1,11 +1,8 @@
 ﻿@page
 @using Cloud.Models
-@using System.IO
 @using Microsoft.Extensions.Hosting
-@using System.Diagnostics
-@using System.Text.Encodings.Web
 @model IndexModel
-@inject ApplicationDbContext db;
+@inject ApplicationDbContext _db;
 @inject IHostEnvironment _env;
 @{
     var user = await User.GetUser();
@@ -15,8 +12,8 @@
 
 <style>
     .ficon {
+        align-items: center;
         display: flex;
-        align-items: center
     }
 </style>
 <h3 class="mt-3">Files</h3>
@@ -26,8 +23,8 @@
 <button type="button" class="btn btn-primary" data-mdb-toggle="modal" data-mdb-target="#newFolderModal">
     New Folder
 </button>
-<div class="progress mt-2 mb-2" style="height: 2vh;display: none" id="progress1">
-    <div class="progress-bar" style="min-width: 0%;display: none" id="uprogress">
+<div class="progress mt-2 mb-2" style="display: none; height: 2vh;" id="progress1">
+    <div class="progress-bar" style="display: none; min-width: 0;" id="uprogress">
 
     </div>
 </div>
@@ -54,9 +51,9 @@
                     <button type="button" class="btn-close" data-mdb-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <input type="hidden" name="path" id="shareFile" />
+                    <input type="hidden" name="path" id="shareFile"/>
                     <label for="shareExpiry">Expires</label>
-                    <input type="date" name="expiryDate" class="form-control" id="shareExpiry" />
+                    <input type="date" name="expiryDate" class="form-control" id="shareExpiry"/>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-mdb-dismiss="modal">
@@ -79,8 +76,8 @@
                 </div>
                 <div class="modal-body">
                     <label for="fileName">Foldername</label>
-                    <input type="text" name="foldername" id="fileName" class="form-control" />
-                    <input type="hidden" name="Path" value="@Model.Path" />
+                    <input type="text" name="foldername" id="fileName" class="form-control"/>
+                    <input type="hidden" name="Path" value="@Model.Path"/>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-mdb-dismiss="modal">
@@ -93,6 +90,7 @@
         </div>
     </div>
 </div>
+
 @section Scripts
 {
     <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -103,12 +101,12 @@
     <script>
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.has('download_link')) {
-            let a = "<a href='" + urlParams.get('download_link') + "'>Link</a><br><input type='text' class='form-control' value='" + urlParams.get('download_link') + "' readonly>";
+            let a = `<a href='${urlParams.get('download_link')}'>Link</a><br><input type='text' class='form-control' value='${urlParams.get('download_link')}' readonly>`;
             Swal.fire(
                 'Shared',
                 a,
                 'success'
-            )
+            );
         }
         window.history.replaceState(null, null, window.location.pathname);
         var uppy = Uppy.Core()
@@ -120,17 +118,17 @@
                     proudlyDisplayPoweredByUppy: false,
                     showRemoveButtonAfterComplete: false,
                     showProgressDetails: true,
-                    showLinkToFileUploadResult: false,
+                    showLinkToFileUploadResult: false
                 })
-            .use(Uppy.Tus, { endpoint: '/upload' })
+            .use(Uppy.Tus, { endpoint: '/upload' });
         uppy.use(Uppy.ProgressBar,
             {
                 target: '.progres-bar-uppy',
-                fixed: false,
-            })
+                fixed: false
+            });
         uppy.on('complete',
             (file, result) => {
-                $("#fileUploadModal").modal("hide")
+                $("#fileUploadModal").modal("hide");
                 loadFiles();
                 uppy.reset();
             });
@@ -167,6 +165,7 @@
             document.body.removeChild(el);
             toastr.success("Copied link to clipboard");
         }
+
         loadFiles();
     </script>
 }

@@ -1,18 +1,17 @@
 ﻿@page
 @using Cloud.Models
 @model Cloud.Pages.Admin.EditUserModel
-@inject ApplicationDbContext db;
+@inject ApplicationDbContext _db;
 @{
     var user = await UserManager.GetUserById(Model.Id);
 }
 <style>
-    input[type=checkbox]
-    {
+    input[type=checkbox] {
+        -moz-transform: scale(2); /* FF */
         /* Double-sized Checkboxes */
         -ms-transform: scale(2); /* IE */
-        -moz-transform: scale(2); /* FF */
-        -webkit-transform: scale(2); /* Safari and Chrome */
         -o-transform: scale(2); /* Opera */
+        -webkit-transform: scale(2); /* Safari and Chrome */
         padding: 10px;
     }
 </style>
@@ -29,7 +28,7 @@
                 <label for="name">Name</label>
                 <input type="text" class="form-control" id="name" value="@user.Name" asp-for="Data.Name"/>
                 <label for="isAdmin">Admin</label>
-                <select asp-items="@Model.Options" class="form-control" asp- asp-for="Data.Admin" >
+                <select asp-items="@Model.Options" class="form-control" asp- asp-for="Data.Admin" id="isAdmin">
                 </select>
             </div>
             <hr/>

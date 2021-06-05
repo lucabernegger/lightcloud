@@ -1,15 +1,13 @@
 ﻿using System;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.IO;
 using System.Linq;
 using System.Text.Encodings.Web;
-using System.Text.Json;
 using System.Threading.Tasks;
 using Cloud.Models;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Hosting;
 using FileShare = System.IO.FileShare;
 
@@ -18,8 +16,8 @@ namespace Cloud.Pages
     [Authorize(AuthenticationSchemes = CookieAuthenticationDefaults.AuthenticationScheme)]
     public class IndexModel : PageModel
     {
-        private readonly IHostEnvironment _env;
         private readonly ApplicationDbContext _db;
+        private readonly IHostEnvironment _env;
 
         public IndexModel(IHostEnvironment env, ApplicationDbContext db)
         {
@@ -27,50 +25,50 @@ namespace Cloud.Pages
             _db = db;
         }
 
-        [BindProperty(SupportsGet = true)] public string Path { get; set; } = "" ; 
+        [BindProperty(SupportsGet = true)] public string Path { get; set; } = "";
 
-     
+
         public async Task OnPostCreateFolder(string folderName)
         {
             var user = await User.GetUser();
-            string targetFolderName = $"{_env.ContentRootPath}/Data/{user.Id}/{Path}/{folderName}";
+            var targetFolderName = $"{_env.ContentRootPath}/Data/{user.Id}/{Path}/{folderName}";
             Directory.CreateDirectory(targetFolderName);
         }
+
         public async Task<IActionResult> OnGetDownload(string path)
         {
             var fileExtensionToOpenText = new[] {".txt", ".json", ".lua", ".cs", ".yml"};
             var user = await User.GetUser();
-            var file = System.IO.File.Open(@$"{_env.ContentRootPath}/Data/{user.Id}/{path}", FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+            var file = System.IO.File.Open(@$"{_env.ContentRootPath}/Data/{user.Id}/{path}", FileMode.Open,
+                FileAccess.Read, FileShare.ReadWrite);
             if (fileExtensionToOpenText.Contains(System.IO.Path.GetExtension(path)))
-            {
-                return Content(System.IO.File.ReadAllText(@$"{_env.ContentRootPath}/Data/{user.Id}/{path}"));
-            }
-            return File(file, "application/" + System.IO.Path.GetExtension(System.IO.Path.GetExtension(path)), System.IO.Path.GetFileName(path));
-
+                return Content(await System.IO.File.ReadAllTextAsync(@$"{_env.ContentRootPath}/Data/{user.Id}/{path}"));
+            return File(file, "application/" + System.IO.Path.GetExtension(System.IO.Path.GetExtension(path)),
+                System.IO.Path.GetFileName(path));
         }
 
         public async Task<IActionResult> OnGetDeleteFile()
         {
             var user = await User.GetUser();
-            string targetFileName = $"{_env.ContentRootPath}/Data/{user.Id}/{Path}";
+            var targetFileName = $"{_env.ContentRootPath}/Data/{user.Id}/{Path}";
             System.IO.File.Delete(targetFileName);
-            return Redirect($"/Index");
+            return Redirect("/Index");
         }
+
         public async Task<IActionResult> OnGetDeleteFolder()
         {
             var user = await User.GetUser();
-            string targetFileName = $"{_env.ContentRootPath}/Data/{user.Id}/{Path}";
-            System.IO.Directory.Delete(targetFileName,true);
-            return Redirect($"/Index");
-
+            var targetFileName = $"{_env.ContentRootPath}/Data/{user.Id}/{Path}";
+            Directory.Delete(targetFileName, true);
+            return Redirect("/Index");
         }
 
-        public async Task<IActionResult> OnPostShareFile(string path,DateTime expiryDate)
+        public async Task<IActionResult> OnPostShareFile(string path, DateTime expiryDate)
         {
             var user = await User.GetUser();
             if (!FileMethods.IsFileShared(path, user.Id))
             {
-                var share = new Models.FileShare()
+                var share = new Models.FileShare
                 {
                     ExpiryDate = expiryDate,
                     File = @$"{user.Id}/" + path,
@@ -78,29 +76,31 @@ namespace Cloud.Pages
                 };
                 _db.Shares.Add(share);
                 await _db.SaveChangesAsync();
-                return Redirect($"/Index?download_link={UrlEncoder.Default.Encode(Startup.Settings.BaseDomain + "Share/" + share.ShareLink)}");
-
+                return Redirect(
+                    $"/Index?download_link={UrlEncoder.Default.Encode(Startup.Settings.BaseDomain + "Share/" + share.ShareLink)}");
             }
 
             return Page();
         }
+
         public async Task<IActionResult> OnGetStopShare()
         {
             var user = await User.GetUser();
-            string p = @$"{user.Id}/{Path}";
+            var p = @$"{user.Id}/{Path}";
             var dbfile = _db.Shares.FirstOrDefault(o => o.File == p);
             if (dbfile is not null)
             {
                 _db.Shares.Remove(dbfile);
-                _db.SaveChanges();
+                await _db.SaveChangesAsync();
             }
+
             return Redirect("/Index");
         }
+
         public PartialViewResult OnGetFilesPartial(string path)
         {
             Path = path;
             return Partial("Shared/_FilesTable", this);
         }
-
     }
 }

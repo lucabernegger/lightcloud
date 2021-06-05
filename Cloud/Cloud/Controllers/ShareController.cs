@@ -1,12 +1,10 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using Cloud.Models;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc;
+using FileShare = System.IO.FileShare;
 
 namespace Cloud.Controllers
 {
@@ -23,7 +21,6 @@ namespace Cloud.Controllers
             _env = env;
         }
 
-       
 
         [HttpGet("{hash}")]
         public IActionResult Download(string hash)
@@ -37,14 +34,15 @@ namespace Cloud.Controllers
                     _db.SaveChanges();
                     return NotFound("File not found");
                 }
-                var file = System.IO.File.Open($"{_env.ContentRootPath}/Data/{dbFile.File}", FileMode.Open, FileAccess.Read, System.IO.FileShare.ReadWrite);
 
-                return File(file, "application/" + System.IO.Path.GetExtension(System.IO.Path.GetExtension(dbFile.File)), System.IO.Path.GetFileName(dbFile.File));
+                var file = System.IO.File.Open($"{_env.ContentRootPath}/Data/{dbFile.File}", FileMode.Open,
+                    FileAccess.Read, FileShare.ReadWrite);
 
+                return File(file, "application/" + Path.GetExtension(Path.GetExtension(dbFile.File)),
+                    Path.GetFileName(dbFile.File));
             }
 
             return NotFound("File not found");
-
         }
     }
 }

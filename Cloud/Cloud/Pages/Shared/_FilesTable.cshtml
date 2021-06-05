@@ -1,5 +1,5 @@
-﻿@using System.IO
-@using Microsoft.AspNetCore.Hosting
+﻿@using Microsoft.AspNetCore.Hosting
+@using System.IO
 @inject IWebHostEnvironment _env;
 @{
     var user = await User.GetUser();
@@ -7,102 +7,102 @@
 }
 <table class="table table-hover table-responsive" style="font-size: 1.2em">
     <thead>
-        <tr>
-            <td>Name</td>
-            <td></td>
-            <td>Size</td>
-            <td>Modified</td>
-            <td></td>
-        </tr>
+    <tr>
+        <td>Name</td>
+        <td></td>
+        <td>Size</td>
+        <td>Modified</td>
+        <td></td>
+    </tr>
     </thead>
     <tbody>
-        @{
-            var i = 0;
-        }
-        @foreach (var dir in Directory.GetDirectories(currentPath))
-        {
-            var info = new DirectoryInfo(dir);
-            var path = System.IO.Path.GetRelativePath(_env.ContentRootPath + "/Data/" + user.Id + "/", dir);
-            <tr>
-                <td>
-                    <span class="ficon">
-                        <a asp-route-path="@path" class="ficon">
-                            <img src="https://raw.githubusercontent.com/microsoft/fluentui-system-icons/master/assets/Folder/SVG/ic_fluent_folder_32_regular.svg" />
-                            @info.Name
-                        </a>
-                    </span>
-                </td>
-                <td>
-                    <a href="#"
-                       id="navbarDropdownMenuLink"
-                       role="button"
-                       data-mdb-toggle="dropdown"
-                       aria-expanded="false"
-                       style="line-height: 100%; vertical-align: middle;">
-                        <i class="fas fa-ellipsis-h"></i>
+    @{
+        var i = 0;
+    }
+    @foreach (var dir in Directory.GetDirectories(currentPath))
+    {
+        var info = new DirectoryInfo(dir);
+        var path = System.IO.Path.GetRelativePath(_env.ContentRootPath + "/Data/" + user.Id + "/", dir);
+        <tr>
+            <td>
+                <span class="ficon">
+                    <a asp-route-path="@path" class="ficon">
+                        <img src="https://raw.githubusercontent.com/microsoft/fluentui-system-icons/master/assets/Folder/SVG/ic_fluent_folder_32_regular.svg"/>
+                        @info.Name
                     </a>
-                    <ul class="dropdown-menu dropdown-menu-end "
-                        aria-labelledby="navbarDropdownMenuLink" style="background: #013a63 !important">
-                        <li>
-                            <a class="dropdown-item text-white nohover" asp-page-handler="DeleteFolder" asp-route-path="@path" asp-route-fileName="@info.Name"><i class="fas fa-trash text-danger"></i> Delete</a>
-                        </li>
-                    </ul>
-                </td>
-                <td>@FileMethods.BytesToString(info.GetSizeOfDirectory())</td>
-                <td>@info.LastWriteTime.ToShortDateString()</td>
-                <td></td>
-            </tr>
-        }
-        @{ i = 0; }
-        @foreach (var file in Directory.GetFiles(currentPath))
-        {
-            var info = new FileInfo(file);
-            var path = System.IO.Path.GetRelativePath(_env.ContentRootPath + "/Data/" + user.Id + "/", file);
-            var isShared = FileMethods.IsFileShared(path, user.Id);
-            <tr>
-                <td>
-                    <span class="ficon">
-                        <a asp-route-path="@path" asp-page-handler="Download" class="ficon">
-                            <img src="https://raw.githubusercontent.com/microsoft/fluentui-system-icons/master/assets/Document/SVG/ic_fluent_document_32_regular.svg" />
-                            @info.Name
-                        </a>
-                    </span>
-                </td>
-                <td>
-                    <a href="#"
-                       id="navbarDropdownMenuLink"
-                       role="button"
-                       data-mdb-toggle="dropdown"
-                       aria-expanded="false"
-                       style="line-height: 100%; vertical-align: middle;">
-                        <i class="fas fa-ellipsis-h"></i>
-                        
+                </span>
+            </td>
+            <td>
+                <a href="#"
+                   id="navbarDropdownMenuLink"
+                   role="button"
+                   data-mdb-toggle="dropdown"
+                   aria-expanded="false"
+                   style="line-height: 100%; vertical-align: middle;">
+                    <i class="fas fa-ellipsis-h"></i>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end "
+                    aria-labelledby="navbarDropdownMenuLink" style="background: #013a63 !important">
+                    <li>
+                        <a class="dropdown-item text-white nohover" asp-page-handler="DeleteFolder" asp-route-path="@path" asp-route-fileName="@info.Name"><i class="fas fa-trash text-danger"></i> Delete</a>
+                    </li>
+                </ul>
+            </td>
+            <td>@FileMethods.BytesToString(info.GetSizeOfDirectory())</td>
+            <td>@info.LastWriteTime.ToShortDateString()</td>
+            <td></td>
+        </tr>
+    }
+    @{ i = 0; }
+    @foreach (var file in Directory.GetFiles(currentPath))
+    {
+        var info = new FileInfo(file);
+        var path = System.IO.Path.GetRelativePath(_env.ContentRootPath + "/Data/" + user.Id + "/", file);
+        var isShared = FileMethods.IsFileShared(path, user.Id);
+        <tr>
+            <td>
+                <span class="ficon">
+                    <a asp-route-path="@path" asp-page-handler="Download" class="ficon">
+                        <img src="https://raw.githubusercontent.com/microsoft/fluentui-system-icons/master/assets/Document/SVG/ic_fluent_document_32_regular.svg"/>
+                        @info.Name
                     </a>
-                    <ul class="dropdown-menu dropdown-menu-end "
-                        aria-labelledby="navbarDropdownMenuLink" style="background: #013a63 !important">
-                        <li>
-                            <a class="dropdown-item text-white nohover" asp-page-handler="DeleteFile" asp-route-path="@path" asp-route-fileName="@info.Name"><i class="fas fa-trash text-danger"></i> Delete</a>
-                        </li>
-                        @if (!isShared)
-                        {
-                            <li>
-                                <a class="dropdown-item text-white nohover" onclick="showShareModal('@path')" style="cursor: pointer"><i class="fas fa-share-alt-square text-cyan"></i> Share</a>
-                            </li>
-                        }
-                        else
-                        {
-                            <li>
-                                <a class="dropdown-item text-white nohover" asp-page-handler="StopShare" asp-route-path="@path"><i class="fas fa-share-alt-square text-warning"></i> Stop Share</a>
-                            </li>
-                        }
+                </span>
+            </td>
+            <td>
+                <a href="#"
+                   id="navbarDropdownMenuLink"
+                   role="button"
+                   data-mdb-toggle="dropdown"
+                   aria-expanded="false"
+                   style="line-height: 100%; vertical-align: middle;">
+                    <i class="fas fa-ellipsis-h"></i>
 
-                    </ul>
-                </td>
-                <td>@FileMethods.BytesToString(info.Length)</td>
-                <td>@info.LastWriteTime.ToShortDateString()</td>
-                <td>@(isShared ? Html.Raw($"<i class='fas fa-share-alt ml-1 link-primary' onclick='copy(\"{FileMethods.GetSharedLink(path,user.Id)}\")'></i>") : "")</td>
-            </tr>
-            i++;
-        }
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end "
+                    aria-labelledby="navbarDropdownMenuLink" style="background: #013a63 !important">
+                    <li>
+                        <a class="dropdown-item text-white nohover" asp-page-handler="DeleteFile" asp-route-path="@path" asp-route-fileName="@info.Name"><i class="fas fa-trash text-danger"></i> Delete</a>
+                    </li>
+                    @if (!isShared)
+                    {
+                        <li>
+                            <a class="dropdown-item text-white nohover" onclick="showShareModal('@path')" style="cursor: pointer"><i class="fas fa-share-alt-square text-cyan"></i> Share</a>
+                        </li>
+                    }
+                    else
+                    {
+                        <li>
+                            <a class="dropdown-item text-white nohover" asp-page-handler="StopShare" asp-route-path="@path"><i class="fas fa-share-alt-square text-warning"></i> Stop Share</a>
+                        </li>
+                    }
+
+                </ul>
+            </td>
+            <td>@FileMethods.BytesToString(info.Length)</td>
+            <td>@info.LastWriteTime.ToShortDateString()</td>
+            <td>@(isShared ? Html.Raw($"<i class='fas fa-share-alt ml-1 link-primary' onclick='copy(\"{FileMethods.GetSharedLink(path, user.Id)}\")'></i>") : "")</td>
+        </tr>
+        i++;
+    }
     </tbody>
 </table>

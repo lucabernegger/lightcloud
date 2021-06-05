@@ -1,8 +1,3 @@
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using System;
 using System.IO;
 using System.Text;
@@ -11,8 +6,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using Cloud.Models;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using tusdotnet;
 using tusdotnet.Interfaces;
 using tusdotnet.Models;
@@ -30,7 +30,8 @@ namespace Cloud
 
         public IConfiguration Configuration { get; }
 
-        public static Settings Settings { get; } = JsonSerializer.Deserialize<Settings>(File.ReadAllText("settings.json"));
+        public static Settings Settings { get; } =
+            JsonSerializer.Deserialize<Settings>(File.ReadAllText("settings.json"));
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
@@ -42,11 +43,11 @@ namespace Cloud
                 x.MultipartHeadersLengthLimit = int.MaxValue;
             });
             services.AddRazorPages().AddRazorRuntimeCompilation();
-            services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(options => {
+            services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(options =>
+            {
                 options.LoginPath = new PathString("/Login");
             });
             services.AddDbContext<ApplicationDbContext>();
-
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -77,37 +78,37 @@ namespace Cloud
             });
             app.UseTus(httpContext => new DefaultTusConfiguration
             {
-                Store = new TusDiskStore(@"F:\Repos\cloud\Cloud\Cloud\tmp",true),
+                Store = new TusDiskStore(@"F:\Repos\cloud\Cloud\Cloud\tmp", true),
                 UrlPath = "/upload",
                 Events = new Events
                 {
                     OnFileCompleteAsync = async eventContext =>
                     {
-                        ITusFile file = await eventContext.GetFileAsync();
-                        
+                        var file = await eventContext.GetFileAsync();
+
                         await FileUploadCompleted(file, env, eventContext.CancellationToken);
-                        var terminationStore = (ITusTerminationStore)eventContext.Store;
+                        var terminationStore = (ITusTerminationStore) eventContext.Store;
                         await terminationStore.DeleteFileAsync(file.Id, eventContext.CancellationToken);
                     }
                 }
             });
         }
 
-        private async Task FileUploadCompleted(ITusFile file,IWebHostEnvironment env,CancellationToken cs)
+        private async Task FileUploadCompleted(ITusFile file, IWebHostEnvironment env, CancellationToken cs)
         {
             var meta = await file.GetMetadataAsync(cs);
             var user = await UserManager.GetUserById(Convert.ToInt32(meta["uid"].GetString(Encoding.UTF8)));
-            using var stream = await file.GetContentAsync(cs);
-            string filepath = env.ContentRootPath + "/Data/" + user.Id;
+            await using var stream = await file.GetContentAsync(cs);
+            var filepath = env.ContentRootPath + "/Data/" + user.Id;
             var size = new DirectoryInfo(filepath).GetSizeOfDirectory();
             if (stream.Length + size < user.MaxFileBytes)
             {
-                using (var fileStream = new FileStream(filepath + "/" + meta["filename"].GetString(Encoding.UTF8), FileMode.Create))
-                {
-                    await stream.CopyToAsync(fileStream);
-                    await fileStream.DisposeAsync();
-                }
+                await using var fileStream = new FileStream(filepath + "/" + meta["filename"].GetString(Encoding.UTF8),
+                    FileMode.Create);
+                await stream.CopyToAsync(fileStream, cs);
+                await fileStream.DisposeAsync();
             }
+
             await stream.DisposeAsync();
         }
     }

@@ -1,8 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
-using Cloud.Migrations;
 using Cloud.Models;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
@@ -14,22 +10,14 @@ namespace Cloud.Pages
     [Authorize(AuthenticationSchemes = CookieAuthenticationDefaults.AuthenticationScheme)]
     public class UserSettingsModel : PageModel
     {
-        [BindProperty]
-        public SetPasswordData SetPasswordData { get; set; }
-
-        private readonly ApplicationDbContext _db;
-        public UserSettingsModel(ApplicationDbContext db)
-        {
-            _db = db;
-        }
+        [BindProperty] public SetPasswordData SetPasswordData { get; set; }
 
         public async Task<IActionResult> OnPostSetPassword()
         {
             var user = await User.GetUser();
-            if (UserManager.IsValid(user.Name, SetPasswordData.OldPassword) && SetPasswordData.NewPassword.Equals(SetPasswordData.NewPasswordRepeat))
-            {
-                await UserManager.SetNewPassword(user.Id,SetPasswordData.NewPassword);
-            }
+            if (UserManager.IsValid(user.Name, SetPasswordData.OldPassword) &&
+                SetPasswordData.NewPassword.Equals(SetPasswordData.NewPasswordRepeat))
+                await UserManager.SetNewPassword(user.Id, SetPasswordData.NewPassword);
 
             return Page();
         }
