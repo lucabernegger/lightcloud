@@ -87,7 +87,7 @@
                         @if (!isShared)
                         {
                             <li>
-                                <a class="dropdown-item text-white nohover" onclick="showShareModal('@path')"><i class="fas fa-share-alt-square text-cyan"></i> Share</a>
+                                <a class="dropdown-item text-white nohover" onclick="showShareModal('@path')" style="cursor: pointer"><i class="fas fa-share-alt-square text-cyan"></i> Share</a>
                             </li>
                         }
                         else
@@ -101,7 +101,7 @@
                 </td>
                 <td>@FileMethods.BytesToString(info.Length)</td>
                 <td>@info.LastWriteTime.ToShortDateString()</td>
-                <td>@(isShared ? Html.Raw($"<i class='fas fa-share-alt ml-1' onclick='copy(\"{FileMethods.GetSharedLink(path,user.Id)}\")'></i>") : "")</td>
+                <td>@(isShared ? Html.Raw($"<i class='fas fa-share-alt ml-1 link-primary' onclick='copy(\"{FileMethods.GetSharedLink(path,user.Id)}\")'></i>") : "")</td>
             </tr>
             i++;
         }
