@@ -99,7 +99,7 @@ namespace Cloud
             var meta = await file.GetMetadataAsync(cs);
             var user = await UserManager.GetUserById(Convert.ToInt32(meta["uid"].GetString(Encoding.UTF8)));
             await using var stream = await file.GetContentAsync(cs);
-            var filepath = env.ContentRootPath + "/Data/" + user.Id;
+            var filepath = env.ContentRootPath + "/Data/" + user.Id + "/"+meta["path"].GetString(Encoding.UTF8);
             var size = new DirectoryInfo(filepath).GetSizeOfDirectory();
             if (stream.Length + size < user.MaxFileBytes)
             {
