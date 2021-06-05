@@ -6,6 +6,7 @@ using Microsoft.Extensions.Hosting;
 using System;
 using System.IO;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Cloud.Models;
@@ -29,10 +30,7 @@ namespace Cloud
 
         public IConfiguration Configuration { get; }
 
-        public static Settings Settings { get; } = new Settings()
-        {
-            BaseDomain = "https://localhost:44395/"
-        };
+        public static Settings Settings { get; } = JsonSerializer.Deserialize<Settings>(File.ReadAllText("settings.json"));
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)

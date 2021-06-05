@@ -33,7 +33,7 @@ namespace Cloud.Pages.Admin
             var user = new User()
             {
                 IsAdmin = Data.Admin == 1,
-                MaxFileBytes = FileMethods.GigabyteToByte(Data.MaxStorage), ///TODO: App Setting
+                MaxFileBytes = FileMethods.GigabyteToByte(Data.MaxStorage), 
                 Name = Data.Name,
                 Password = hashed[0],
                 Salt = hashed[1],
