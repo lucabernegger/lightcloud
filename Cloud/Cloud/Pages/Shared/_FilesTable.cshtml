@@ -18,9 +18,6 @@
         </tr>
     </thead>
     <tbody>
-        @{
-            var i = 0;
-        }
         @foreach (var dir in Directory.EnumerateDirectories(currentPath).AsParallel())
         {
             var info = new DirectoryInfo(dir);
@@ -55,12 +52,9 @@
                 <td></td>
             </tr>
         }
-        @{
-            i = 0;
-        }
-        @foreach (var file in _db.Files.Where(o=>o.UserId == user.Id && o.Path == currentPath).ToList())
+        @foreach (var file in _db.Files.Where(o => o.UserId == user.Id && o.Path == currentPath).AsParallel())
         {
-            var path = System.IO.Path.GetRelativePath(_env.ContentRootPath + "/Data/" + user.Id + "/", file.Path+"/"+file.Filename);
+            var path = System.IO.Path.GetRelativePath(_env.ContentRootPath + "/Data/" + user.Id + "/", file.Path + "/" + file.Filename);
             var isShared = FileMethods.IsFileShared(path, user.Id);
             <tr>
                 <td>
@@ -105,7 +99,7 @@
                 <td>@file.LastModified.ToShortDateString()</td>
                 <td>@(isShared ? Html.Raw($"<i class='fas fa-share-alt ml-1 link-primary' onclick='copy(\"{FileMethods.GetSharedLink(path, user.Id)}\")'></i>") : "")</td>
             </tr>
-            i++;
+
         }
     </tbody>
 </table>
