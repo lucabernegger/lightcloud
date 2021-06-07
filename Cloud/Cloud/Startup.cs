@@ -103,6 +103,18 @@ namespace Cloud
             var size = new DirectoryInfo(filepath).GetSizeOfDirectory();
             if (stream.Length + size < user.MaxFileBytes)
             {
+                var f = new DbFile()
+                {
+                    Name = meta["filename"].GetString(Encoding.UTF8),
+                    Path = filepath,
+                    Filename = meta["filename"].GetString(Encoding.UTF8),
+                    LastModified = DateTime.Now,
+                    Size = stream.Length,
+                    UserId = user.Id
+                };
+                await using var db = new ApplicationDbContext();
+                db.Files.Add(f);
+                await db.SaveChangesAsync();
                 await using var fileStream = new FileStream(filepath + "/" + meta["filename"].GetString(Encoding.UTF8),
                     FileMode.Create);
                 await stream.CopyToAsync(fileStream, cs);

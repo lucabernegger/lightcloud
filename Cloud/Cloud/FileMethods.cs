@@ -42,26 +42,7 @@ namespace Cloud
             foreach (var di in dis) size += GetSizeOfDirectory(di);
             return size;
         }
-
-        public static List<FileInfo> DirSearch(string sDir)
-        {
-            var list = new List<FileInfo>();
-            try
-            {
-                foreach (var d in Directory.GetDirectories(sDir))
-                {
-                    foreach (var f in Directory.GetFiles(d)) list.Add(new FileInfo(d));
-                    DirSearch(d);
-                }
-            }
-            catch (Exception excpt)
-            {
-                Console.WriteLine(excpt.Message);
-            }
-
-            return list;
-        }
-
+        
         public static string Sha256(string text)
         {
             var crypt = new SHA256Managed();

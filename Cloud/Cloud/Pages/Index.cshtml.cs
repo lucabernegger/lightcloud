@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.Encodings.Web;
@@ -31,8 +32,14 @@ namespace Cloud.Pages
         public async Task OnPostCreateFolder(string folderName)
         {
             var user = await User.GetUser();
-            var targetFolderName = $"{_env.ContentRootPath}/Data/{user.Id}/{Path}/{folderName}";
+            var targetFolderName = $"{_env.ContentRootPath}/Data/{user.Id}/{Path}{folderName}";
             Directory.CreateDirectory(targetFolderName);
+            foreach (var dbFile in _db.Files.Where(o=>o.Path == targetFolderName && o.UserId == user.Id))
+            {
+                _db.Remove(dbFile);
+            }
+
+            await _db.SaveChangesAsync();
         }
 
         public async Task<IActionResult> OnGetDownload(string path)
@@ -51,6 +58,18 @@ namespace Cloud.Pages
         {
             var user = await User.GetUser();
             var targetFileName = $"{_env.ContentRootPath}/Data/{user.Id}/{Path}";
+            Debug.WriteLine(targetFileName);
+            foreach (var file in _db.Files.Where(o=>o.UserId == user.Id))
+            {
+                var f = file.Path + file.Filename;
+                if (f == targetFileName)
+                {
+                    _db.Remove(file);
+                }
+          
+            }
+            _db.SaveChanges();
+
             System.IO.File.Delete(targetFileName);
             return Redirect("/Index");
         }
