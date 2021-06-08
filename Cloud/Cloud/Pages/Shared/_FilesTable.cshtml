@@ -7,9 +7,16 @@
     var user = await User.GetUser();
     string currentPath = _env.ContentRootPath + "/Data/" + user.Id + "/" + Model.Path;
 }
-<table class="table table-hover table-responsive" style="font-size: 1.2em">
+<div id="markbuttons" style="opacity: 0">
+    <form method="post" asp-page-handler="DeleteMarked">
+        <input type="hidden" name="markedJson" id="markedJson"/>
+        <button type="submit" class="btn btn-sm btn-danger mt-2"><i class="fas fa-trash text-white"></i> Delete Selected</button>
+    </form>
+</div>
+<table class="table table-hover table-responsive" style="font-size: 1.2em" id="table">
     <thead>
         <tr>
+            <td><input type="checkbox" class="form-check-input mark-all-checkbox"/></td>
             <td>Name</td>
             <td></td>
             <td>Size</td>
@@ -23,10 +30,11 @@
             var info = new DirectoryInfo(dir);
             var path = System.IO.Path.GetRelativePath(_env.ContentRootPath + "/Data/" + user.Id + "/", dir);
             <tr>
+                <td  data-id="-1"></td>
                 <td>
                     <span class="ficon">
                         <a asp-route-path="@path" class="ficon">
-                            <img src="https://raw.githubusercontent.com/microsoft/fluentui-system-icons/master/assets/Folder/SVG/ic_fluent_folder_32_regular.svg" />
+                            <img src="https://raw.githubusercontent.com/microsoft/fluentui-system-icons/master/assets/Folder/SVG/ic_fluent_folder_32_regular.svg"/>
                             @info.Name
                         </a>
                     </span>
@@ -57,10 +65,11 @@
             var path = System.IO.Path.GetRelativePath(_env.ContentRootPath + "/Data/" + user.Id + "/", file.Path + "/" + file.Filename);
             var isShared = FileMethods.IsFileShared(path, user.Id);
             <tr>
+                <td data-id="@file.Id" class=""><input type="checkbox" class="marker-checkbox form-check-input"/></td>
                 <td>
                     <span class="ficon">
                         <a asp-route-path="@path" asp-page-handler="Download" class="ficon">
-                            <img src="https://raw.githubusercontent.com/microsoft/fluentui-system-icons/master/assets/Document/SVG/ic_fluent_document_32_regular.svg" />
+                            <img src="https://raw.githubusercontent.com/microsoft/fluentui-system-icons/master/assets/Document/SVG/ic_fluent_document_32_regular.svg"/>
                             @file.Name
                         </a>
                     </span>

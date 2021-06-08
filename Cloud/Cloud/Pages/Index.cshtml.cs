@@ -1,8 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.Encodings.Web;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Cloud.Models;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -10,6 +13,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Hosting;
+using Newtonsoft.Json;
 using FileShare = System.IO.FileShare;
 
 namespace Cloud.Pages
@@ -58,7 +62,6 @@ namespace Cloud.Pages
         {
             var user = await User.GetUser();
             var targetFileName = $"{_env.ContentRootPath}/Data/{user.Id}/{Path}";
-            Debug.WriteLine(targetFileName);
             foreach (var file in _db.Files.Where(o=>o.UserId == user.Id))
             {
                 var f = file.Path + file.Filename;
@@ -120,6 +123,24 @@ namespace Cloud.Pages
         {
             Path = path;
             return Partial("Shared/_FilesTable", this);
+        }
+
+        public async Task<IActionResult> OnPostDeleteMarked(string markedJson)
+        {
+            var user = await User.GetUser();
+            var ids = JsonConvert.DeserializeObject<int[]>(markedJson);
+            foreach (var id in ids)
+            {
+                var dbfile = _db.Files.FirstOrDefault(o => o.Id == id);
+                if(dbfile is null)
+                    continue;
+
+                var targetFileName = $"{dbfile.Path}{dbfile.Filename}";
+                _db.Remove(dbfile);
+                System.IO.File.Delete(targetFileName);
+            }
+            _db.SaveChanges();
+            return Page();
         }
     }
 }

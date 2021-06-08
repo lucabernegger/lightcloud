@@ -1,12 +1,14 @@
 ﻿@page
 @using Cloud.Models
 @using Microsoft.Extensions.Hosting
+@using System.Text.Encodings.Web
 @model IndexModel
 @inject ApplicationDbContext _db;
 @inject IHostEnvironment _env;
 @{
     var user = await User.GetUser();
     ViewData["Title"] = "Dashboard";
+    string currentPath = _env.ContentRootPath + "/Data/" + user.Id + "/" + Model.Path;
 
 }
 
@@ -29,6 +31,7 @@
     </div>
 </div>
 <div id="files_table"></div>
+
 <div class="modal fade" id="fileUploadModal" tabindex="-1" aria-labelledby="fileUploadModalLabel" style="display: none;" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
@@ -51,9 +54,9 @@
                     <button type="button" class="btn-close" data-mdb-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <input type="hidden" name="path" id="shareFile"/>
+                    <input type="hidden" name="path" id="shareFile" />
                     <label for="shareExpiry">Expires</label>
-                    <input type="date" name="expiryDate" class="form-control" id="shareExpiry"/>
+                    <input type="date" name="expiryDate" class="form-control" id="shareExpiry" />
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-mdb-dismiss="modal">
@@ -76,8 +79,8 @@
                 </div>
                 <div class="modal-body">
                     <label for="fileName">Foldername</label>
-                    <input type="text" name="foldername" id="fileName" class="form-control"/>
-                    <input type="hidden" name="Path" value="@Model.Path"/>
+                    <input type="text" name="foldername" id="fileName" class="form-control" />
+                    <input type="hidden" name="Path" value="@Model.Path" />
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-mdb-dismiss="modal">
@@ -97,6 +100,9 @@
     <link href="https://releases.transloadit.com/uppy/v1.29.1/uppy.min.css" rel="stylesheet">
 
     <script src="https://releases.transloadit.com/uppy/v1.29.1/uppy.min.js"></script>
+    <link href="https://unpkg.com/bootstrap-table@1.18.3/dist/bootstrap-table.min.css" rel="stylesheet">
+
+    <script src="https://unpkg.com/bootstrap-table@1.18.3/dist/bootstrap-table.min.js"></script>
 
     <script>
         const urlParams = new URLSearchParams(window.location.search);
@@ -141,13 +147,33 @@
                         path: '@Model.Path'
                     });
             });
-
+        var checkedItems = [];
         function loadFiles() {
             $.get("/Index", { handler: "FilesPartial", path: "@Model.Path" }).done(function(data) {
-                $('#files_table').html(data);
+                $('#files_table').html(data)
+                $(".marker-checkbox").change(function () {
+                    if (this.checked) {
+                        checkedItems.push($(this).parent().attr("data-id"));
+                    } else {
+                        const index = checkedItems.indexOf($(this).parent().attr("data-id"));
+                        if (index !== -1) {
+                            checkedItems.splice(index, 1);
+                        }
+                    }
+                    if (checkedItems.length > 0) {
+                        $("#markbuttons").css("opacity","1");
+                    } else {
+                        $("#markbuttons").css("opacity","0") ;
+                    }
+                    $("#markedJson").val(JSON.stringify(checkedItems));
+                });
+                $(".mark-all-checkbox").change(function() {
+                    $(".marker-checkbox").prop('checked', $(this).prop('checked')).trigger("change");
+
+                })
             });
         }
-
+        
         function showShareModal(file) {
             $("#shareFile").val(file);
             $("#shareFileModal").modal("show");
@@ -167,5 +193,6 @@
         }
 
         loadFiles();
+        
     </script>
 }
