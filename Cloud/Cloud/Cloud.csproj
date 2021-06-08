@@ -9,9 +9,13 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="Data\1\**" />
+    <Compile Remove="Schemes\**" />
     <Content Remove="Data\1\**" />
+    <Content Remove="Schemes\**" />
     <EmbeddedResource Remove="Data\1\**" />
+    <EmbeddedResource Remove="Schemes\**" />
     <None Remove="Data\1\**" />
+    <None Remove="Schemes\**" />
   </ItemGroup>
 
   <ItemGroup>
@@ -27,11 +31,8 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="tusdotnet" Version="2.4.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Schemes\" />
   </ItemGroup>
 
 </Project>

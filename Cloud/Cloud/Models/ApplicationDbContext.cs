@@ -6,6 +6,7 @@ namespace Cloud.Models
     {
         public DbSet<User> Users { get; set; }
         public DbSet<FileShare> Shares { get; set; }
+        public DbSet<DbFile> Files { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder options)
         {
