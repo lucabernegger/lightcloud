@@ -7,10 +7,14 @@
     var user = await User.GetUser();
     string currentPath = _env.ContentRootPath + "/Data/" + user.Id + "/" + Model.Path;
 }
-<div id="markbuttons" style="opacity: 0">
-    <form method="post" asp-page-handler="DeleteMarked">
-        <input type="hidden" name="markedJson" id="markedJson"/>
-        <button type="submit" class="btn btn-sm btn-danger mt-2"><i class="fas fa-trash text-white"></i> Delete Selected</button>
+<div id="markbuttons" style="opacity: 0" class="form-row align-items-center">
+    <form method="post" asp-page-handler="DownloadMarked" class="d-inline-flex mt-2">
+        <input type="hidden" name="markedJson" class="markedJson" />
+        <button type="submit" class="btn btn-sm btn-info" disabled=""><i class="fas fa-cloud-download-alt"></i> Download Selected</button>
+    </form>
+    <form method="post" asp-page-handler="DeleteMarked" class="d-inline-flex mt-2">
+        <input type="hidden" name="markedJson" class="markedJson" />
+        <button type="submit" class="btn btn-sm btn-danger " disabled=""><i class="fas fa-trash text-white"></i> Delete Selected</button>
     </form>
 </div>
 <table class="table table-hover table-responsive" style="font-size: 1.2em" id="table">

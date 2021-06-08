@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Text.Encodings.Web;
 using System.Text.Json;
@@ -131,7 +132,7 @@ namespace Cloud.Pages
             var ids = JsonConvert.DeserializeObject<int[]>(markedJson);
             foreach (var id in ids)
             {
-                var dbfile = _db.Files.FirstOrDefault(o => o.Id == id);
+                var dbfile = _db.Files.FirstOrDefault(o => o.Id == id && o.UserId == user.Id);
                 if(dbfile is null)
                     continue;
 
@@ -141,6 +142,33 @@ namespace Cloud.Pages
             }
             _db.SaveChanges();
             return Page();
+        }
+
+        public async Task<IActionResult> OnPostDownloadMarked(string markedJson)
+        {
+            Debug.WriteLine(markedJson);
+            var user = await User.GetUser();
+            var ids = JsonConvert.DeserializeObject<int[]>(markedJson);
+            await using var outStream = new MemoryStream();
+            using (var archive = new ZipArchive(outStream, ZipArchiveMode.Create, true))
+            {
+                foreach (var id in ids)
+                {
+                    var dbfile = _db.Files.FirstOrDefault(o => o.Id == id && o.UserId == user.Id);
+                    if (dbfile is null)
+                        continue;
+
+                    var targetFileName = $"{dbfile.Path}{dbfile.Filename}";
+                    var fileInArchive = archive.CreateEntry(dbfile.Filename, CompressionLevel.Optimal);
+                    await using var entryStream = fileInArchive.Open();
+                    await using var fileToCompressStream = new MemoryStream(System.IO.File.ReadAllBytes(targetFileName));
+                    await fileToCompressStream.CopyToAsync(entryStream);
+                }
+
+            }
+
+            var compressedBytes = outStream.ToArray();
+            return File(compressedBytes, "application/zip", $"{DateTime.Now.ToShortDateString()}.zip");
         }
     }
 }

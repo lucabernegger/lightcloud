@@ -165,10 +165,16 @@
                     } else {
                         $("#markbuttons").css("opacity","0") ;
                     }
-                    $("#markedJson").val(JSON.stringify(checkedItems));
+                    $(".markedJson").val(JSON.stringify(checkedItems));
                 });
                 $(".mark-all-checkbox").change(function() {
                     $(".marker-checkbox").prop('checked', $(this).prop('checked')).trigger("change");
+                    if (this.checked) {
+                        $("#markbuttons button").removeAttr('disabled');
+
+                    } else {
+                        $("#markbuttons button").attr('disabled',true);
+                    }
 
                 })
             });
