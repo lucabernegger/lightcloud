@@ -161,9 +161,12 @@
                         }
                     }
                     if (checkedItems.length > 0) {
-                        $("#markbuttons").css("opacity","1");
+                        $("#markbuttons").css("opacity", "1");
+                        $("#markbuttons button").removeAttr('disabled');
                     } else {
-                        $("#markbuttons").css("opacity","0") ;
+                        $("#markbuttons").css("opacity", "0");
+                        $("#markbuttons button").attr('disabled',true);
+
                     }
                     $(".markedJson").val(JSON.stringify(checkedItems));
                 });
