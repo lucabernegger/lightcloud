@@ -1,6 +1,7 @@
 ﻿@using Microsoft.AspNetCore.Hosting
 @using System.IO
 @using Cloud.Models
+@using System.Diagnostics
 @inject ApplicationDbContext _db;
 @inject IWebHostEnvironment _env;
 @{
@@ -38,7 +39,7 @@
                 <td>
                     <span class="ficon">
                         <a asp-route-path="@path" class="ficon">
-                            <img src="https://raw.githubusercontent.com/microsoft/fluentui-system-icons/master/assets/Folder/SVG/ic_fluent_folder_32_regular.svg"/>
+                            <img src="https://raw.githubusercontent.com/microsoft/fluentui-system-icons/master/assets/Folder/SVG/ic_fluent_folder_28_regular.svg"/>
                             @info.Name
                         </a>
                     </span>
@@ -68,12 +69,23 @@
         {
             var path = System.IO.Path.GetRelativePath(_env.ContentRootPath + "/Data/" + user.Id + "/", file.Path + "/" + file.Filename);
             var isShared = FileMethods.IsFileShared(path, user.Id);
+            var extension = System.IO.Path.GetExtension(file.Path + file.Filename);
             <tr>
                 <td data-id="@file.Id" class=""><input type="checkbox" class="marker-checkbox form-check-input"/></td>
                 <td>
                     <span class="ficon">
                         <a asp-route-path="@path" asp-page-handler="Download" class="ficon">
-                            <img src="https://raw.githubusercontent.com/microsoft/fluentui-system-icons/master/assets/Document/SVG/ic_fluent_document_32_regular.svg"/>
+                            @if (Startup.FileExtensionIcon.ContainsKey(extension))
+                            {
+                                <img src="@Startup.FileExtensionIcon[extension]"/>
+
+                            }
+                            else
+                            {
+                                <img src="https://raw.githubusercontent.com/microsoft/fluentui-system-icons/master/assets/Document/SVG/ic_fluent_document_28_regular.svg"/>
+
+                            }
+
                             @file.Name
                         </a>
                     </span>

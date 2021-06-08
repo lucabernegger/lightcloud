@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Text.Json;
@@ -33,6 +34,30 @@ namespace Cloud
         public static Settings Settings { get; } =
             JsonSerializer.Deserialize<Settings>(File.ReadAllText("settings.json"));
 
+        public static Dictionary<string, string> FileExtensionIcon = new()
+        {
+            {
+                ".zip",
+                "https://raw.githubusercontent.com/microsoft/fluentui-system-icons/master/assets/Folder%20Zip/SVG/ic_fluent_folder_zip_28_regular.svg"
+            },
+            {
+                ".rar",
+                "https://raw.githubusercontent.com/microsoft/fluentui-system-icons/master/assets/Folder%20Zip/SVG/ic_fluent_folder_zip_28_regular.svg"
+            },
+            {
+                ".png",
+                "https://raw.githubusercontent.com/microsoft/fluentui-system-icons/master/assets/Image/SVG/ic_fluent_image_28_regular.svg"
+            },
+            {
+                ".jpg",
+                "https://raw.githubusercontent.com/microsoft/fluentui-system-icons/master/assets/Image/SVG/ic_fluent_image_28_regular.svg"
+            },
+            {
+                ".exe",
+                "https://raw.githubusercontent.com/microsoft/fluentui-system-icons/master/assets/Apps/SVG/ic_fluent_apps_28_regular.svg"
+            },
+
+        };
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
