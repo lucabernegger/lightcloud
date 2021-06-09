@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using Cloud.Models;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -25,7 +26,9 @@ namespace Cloud.Pages
                 SetPasswordData.NewPassword.Equals(SetPasswordData.NewPasswordRepeat))
             {
                 await UserManager.SetNewPassword(user.Id, SetPasswordData.NewPassword);
-                user.FilePassword = UserManager.Encrypt(UserManager.Decrypt(user.FilePassword, UserManager.Sha512(SetPasswordData.OldPassword)),
+                var text = UserManager.Decrypt(user.FilePassword, UserManager.Sha512(SetPasswordData.OldPassword));
+                Console.WriteLine("T!: " + text);
+                user.FilePassword = UserManager.Encrypt(text,
                     UserManager.Sha512(SetPasswordData.NewPassword));
                 _db.Users.Update(user);
                 await _db.SaveChangesAsync();

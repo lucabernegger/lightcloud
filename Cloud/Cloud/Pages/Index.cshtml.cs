@@ -4,13 +4,17 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Threading;
 using System.Threading.Tasks;
 using Cloud.Models;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Hosting;
@@ -47,15 +51,43 @@ namespace Cloud.Pages
             await _db.SaveChangesAsync();
         }
 
-        public async Task<IActionResult> OnGetDownload(string path)
+        public async Task<IActionResult> OnGetDownload(string path,CancellationToken cs)
         {
-            var fileExtensionToOpenText = new[] {".txt", ".json", ".lua", ".cs", ".yml"};
             var user = await User.GetUser();
             var file = System.IO.File.Open(@$"{_env.ContentRootPath}/Data/{user.Id}/{path}", FileMode.Open,
                 FileAccess.Read, FileShare.ReadWrite);
-            if (fileExtensionToOpenText.Contains(System.IO.Path.GetExtension(path)))
-                return Content(await System.IO.File.ReadAllTextAsync(@$"{_env.ContentRootPath}/Data/{user.Id}/{path}"));
-            return File(file, "application/" + System.IO.Path.GetExtension(System.IO.Path.GetExtension(path)),
+
+            var clientComponent = HttpContext.Request.Cookies["hash"];
+            var serverComponent = HttpContext.Session.GetString("ServerFileKeyComponent");
+            var key = UserManager.Decrypt(user.FilePassword, UserManager.Decrypt(clientComponent, serverComponent));
+            byte[] saltBytes = new byte[] { 1, 2, 3, 4, 5, 6, 7, 8 };
+            FileStream fsCrypt = new FileStream(@$"{_env.ContentRootPath}/Data/{user.Id}/{path}", FileMode.Open);
+
+            RijndaelManaged AES = new RijndaelManaged();
+
+            AES.KeySize = 256;
+            AES.BlockSize = 128;
+
+
+            var key1 = new Rfc2898DeriveBytes(Encoding.UTF8.GetBytes(key), saltBytes, 1000);
+            AES.Key = key1.GetBytes(AES.KeySize / 8);
+            AES.IV = key1.GetBytes(AES.BlockSize / 8);
+            AES.Padding = PaddingMode.Zeros;
+
+            AES.Mode = CipherMode.CBC;
+
+            using CryptoStream cs1 = new CryptoStream(fsCrypt,
+                AES.CreateDecryptor(),
+                CryptoStreamMode.Read);
+
+            var fsOut = new MemoryStream();
+                 fsOut.SetLength(fsCrypt.Length);
+            int data;
+            while ((data = cs1.ReadByte()) != -1)
+                fsOut.WriteByte((byte)data);
+
+           
+            return File(fsOut, "application/" + System.IO.Path.GetExtension(System.IO.Path.GetExtension(path)),
                 System.IO.Path.GetFileName(path));
         }
 

@@ -47,9 +47,10 @@ namespace Cloud.Pages
                 };
                 await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal,authenticationProperties);
                 var hash = UserManager.Sha512(password);
-                var serverKeyComponent = UserManager.GenerateRandomCryptoString();
+                var serverKeyComponent = UserManager.GenerateRandomPassword();
                 Debug.WriteLine("Client: " + hash);
                 Debug.WriteLine("Server: " + serverKeyComponent);
+                Debug.WriteLine("ENC: " + UserManager.Encrypt(hash, serverKeyComponent));
                 HttpContext.Session.SetString("ServerFileKeyComponent", serverKeyComponent);
                 HttpContext.Response.Cookies.Append("ClientFileKeyComponent", UserManager.Encrypt(hash,serverKeyComponent));
                 return RedirectToPage("/Index");

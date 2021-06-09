@@ -78,6 +78,7 @@ namespace Cloud
             });
             services.AddDbContext<ApplicationDbContext>();
             services.AddSession();
+            
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -122,13 +123,18 @@ namespace Cloud
                     }
                 }
             });
+            var db = new ApplicationDbContext();
+            var user = db.Users.Find(1);
+            user.FilePassword = UserManager.Encrypt("S0CZH3DBWaSLkPw5",
+                UserManager.Sha512("123"));
+            db.SaveChanges();
         }
 
         private async Task FileUploadCompleted(ITusFile file, IWebHostEnvironment env, CancellationToken cs,HttpContext ctx)
         {
             var meta = await file.GetMetadataAsync(cs);
             
-            var clientComponent = meta["hash"].GetString(Encoding.UTF8);
+            var clientComponent = ctx.Request.Cookies["ClientFileKeyComponent"];
             var serverComponent = ctx.Session.GetString("ServerFileKeyComponent");
             
             var user = await UserManager.GetUserById(Convert.ToInt32(meta["uid"].GetString(Encoding.UTF8)));
@@ -149,14 +155,83 @@ namespace Cloud
                 await using var db = new ApplicationDbContext();
                 db.Files.Add(f);
                 await db.SaveChangesAsync();
-                await using var fileStream = new FileStream(filepath + "/" + meta["filename"].GetString(Encoding.UTF8),
-                    FileMode.Create);
+                var k1 = UserManager.Decrypt(clientComponent, serverComponent);
+                var key = UserManager.Decrypt(user.FilePassword,k1);
+             
+                /*await using var fileStream = new FileStream(filepath + "/" + meta["filename"].GetString(Encoding.UTF8),
+                    FileMode.Create); */
+                AES_Encrypt(stream, filepath + "/" + meta["filename"].GetString(Encoding.UTF8),Encoding.UTF8.GetBytes(key));
                 
-                await stream.CopyToAsync(fileStream, cs);
-                await fileStream.DisposeAsync();
+                 
             }
 
             await stream.DisposeAsync();
+        }
+        private static void AES_Encrypt(Stream fsIn, string outputFile, byte[] passwordBytes)
+        {
+            byte[] saltBytes = new byte[] { 1, 2, 3, 4, 5, 6, 7, 8 };
+            string cryptFile = outputFile;
+            FileStream fsCrypt = new FileStream(cryptFile, FileMode.Create);
+
+            RijndaelManaged AES = new RijndaelManaged();
+
+            AES.KeySize = 256;
+            AES.BlockSize = 128;
+
+
+            var key = new Rfc2898DeriveBytes(passwordBytes, saltBytes, 1000);
+            AES.Key = key.GetBytes(AES.KeySize / 8);
+            AES.IV = key.GetBytes(AES.BlockSize / 8);
+            AES.Padding = PaddingMode.Zeros;
+
+            AES.Mode = CipherMode.CBC;
+
+            CryptoStream cs = new CryptoStream(fsCrypt,
+                AES.CreateEncryptor(),
+                CryptoStreamMode.Write);
+            
+            int data;
+            while ((data = fsIn.ReadByte()) != -1)
+                cs.WriteByte((byte)data);
+
+
+            fsIn.Close();
+            cs.Close();
+            fsCrypt.Close();
+
+        }
+        public static Stream AES_Decrypt(string inputFile, byte[] passwordBytes)
+        {
+
+            byte[] saltBytes = new byte[] { 1, 2, 3, 4, 5, 6, 7, 8 };
+            FileStream fsCrypt = new FileStream(inputFile, FileMode.Open);
+
+            RijndaelManaged AES = new RijndaelManaged();
+
+            AES.KeySize = 256;
+            AES.BlockSize = 128;
+
+
+            var key = new Rfc2898DeriveBytes(passwordBytes, saltBytes, 1000);
+            AES.Key = key.GetBytes(AES.KeySize / 8);
+            AES.IV = key.GetBytes(AES.BlockSize / 8);
+            AES.Padding = PaddingMode.Zeros;
+
+            AES.Mode = CipherMode.CBC;
+
+            CryptoStream cs = new CryptoStream(fsCrypt,
+                AES.CreateDecryptor(),
+                CryptoStreamMode.Read);
+
+            var fsOut = new MemoryStream();
+
+            int data;
+            while ((data = cs.ReadByte()) != -1)
+                fsOut.WriteByte((byte)data);
+          
+            cs.Close();
+            fsCrypt.Close();
+            return fsOut;
         }
     }
 }
