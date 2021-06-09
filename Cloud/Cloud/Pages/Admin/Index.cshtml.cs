@@ -35,7 +35,8 @@ namespace Cloud.Pages.Admin
                 Name = Data.Name,
                 Password = hashed[0],
                 Salt = hashed[1],
-                LastLogin = DateTime.MinValue
+                LastLogin = DateTime.MinValue,
+                FilePassword = UserManager.Encrypt(UserManager.GenerateRandomCryptoString(),pw)
             };
             _db.Users.Add(user);
             await _db.SaveChangesAsync();

@@ -1,0 +1,149 @@
+{
+  "IsWindows": true,
+  "Drives": [
+    {
+      "Identifier": "System",
+      "Size": 9533092.885328451,
+      "Available": 527718.61328125,
+      "Used": 446248914944.0,
+      "UsedPercentage": 0.0
+    },
+    {
+      "Identifier": "Games",
+      "Size": 9538815.5117113,
+      "Available": 295226.1953125,
+      "Used": 690634936320.0,
+      "UsedPercentage": 0.0
+    },
+    {
+      "Identifier": "SSD",
+      "Size": 2289374.8940260927,
+      "Available": 98433.0390625,
+      "Used": 136840171520.0,
+      "UsedPercentage": 0.0
+    },
+    {
+      "Identifier": "HDD",
+      "Size": 28614996.591134507,
+      "Available": 1782032.1484375,
+      "Used": 1131857940480.0,
+      "UsedPercentage": 0.0
+    }
+  ],
+  "Ram": {
+    "TotalMemory": 16318.0,
+    "UsedMemory": 9152.0,
+    "FreeMemory": 7166.0,
+    "SharedMemory": 0.0,
+    "CacheMemory": 0.0,
+    "AvailableMemory": 0.0,
+    "TotalSwap": 0.0,
+    "UsedSwap": 0.0,
+    "FreeSwap": 0.0
+  },
+  "Cpu": {
+    "TotalPercentage": 18.0,
+    "TotalThreads": 4641
+  },
+  "Network": {
+    "NetworkAdapters": [
+      {
+        "Name": "OpenVPN Wintun",
+        "Description": "Wintun Userspace Tunnel",
+        "BytesReceived": 0,
+        "BytesSent": 0,
+        "IncomingErrors": 0,
+        "OutgoingErrors": 0,
+        "OutgoingDiscarded": 0,
+        "IsReceiveOnly": false,
+        "TcpConnectionCount": 0,
+        "Ips": [ { "Address": "169.254.234.68" } ]
+      },
+      {
+        "Name": "LAN-Verbindung 2",
+        "Description": "TAP-Windows Adapter V9",
+        "BytesReceived": 0,
+        "BytesSent": 0,
+        "IncomingErrors": 0,
+        "OutgoingErrors": 0,
+        "OutgoingDiscarded": 0,
+        "IsReceiveOnly": false,
+        "TcpConnectionCount": 0,
+        "Ips": [ { "Address": "169.254.173.21" } ]
+      },
+      {
+        "Name": "Ethernet",
+        "Description": "Intel(R) I211 Gigabit Network Connection",
+        "BytesReceived": 32131009922,
+        "BytesSent": 295190068,
+        "IncomingErrors": 0,
+        "OutgoingErrors": 0,
+        "OutgoingDiscarded": 0,
+        "IsReceiveOnly": false,
+        "TcpConnectionCount": 0,
+        "Ips": [ { "Address": "192.168.0.28" } ]
+      },
+      {
+        "Name": "LAN-Verbindung",
+        "Description": "TAP-Windows Adapter V9 #2",
+        "BytesReceived": 0,
+        "BytesSent": 0,
+        "IncomingErrors": 0,
+        "OutgoingErrors": 0,
+        "OutgoingDiscarded": 0,
+        "IsReceiveOnly": false,
+        "TcpConnectionCount": 0,
+        "Ips": [ { "Address": "169.254.101.23" } ]
+      },
+      {
+        "Name": "Loopback Pseudo-Interface 1",
+        "Description": "Software Loopback Interface 1",
+        "BytesReceived": 0,
+        "BytesSent": 0,
+        "IncomingErrors": 0,
+        "OutgoingErrors": 0,
+        "OutgoingDiscarded": 0,
+        "IsReceiveOnly": false,
+        "TcpConnectionCount": 0,
+        "Ips": [ { "Address": "127.0.0.1" } ]
+      },
+      {
+        "Name": "vEthernet (Ethernet)",
+        "Description": "Hyper-V Virtual Ethernet Adapter",
+        "BytesReceived": 602094,
+        "BytesSent": 629534,
+        "IncomingErrors": 0,
+        "OutgoingErrors": 0,
+        "OutgoingDiscarded": 0,
+        "IsReceiveOnly": false,
+        "TcpConnectionCount": 0,
+        "Ips": [ { "Address": "172.24.96.1" } ]
+      },
+      {
+        "Name": "vEthernet (Default Switch)",
+        "Description": "Hyper-V Virtual Ethernet Adapter #2",
+        "BytesReceived": 0,
+        "BytesSent": 603892,
+        "IncomingErrors": 0,
+        "OutgoingErrors": 0,
+        "OutgoingDiscarded": 0,
+        "IsReceiveOnly": false,
+        "TcpConnectionCount": 0,
+        "Ips": [ { "Address": "172.31.32.1" } ]
+      },
+      {
+        "Name": "vEthernet (WSL)",
+        "Description": "Hyper-V Virtual Ethernet Adapter #3",
+        "BytesReceived": 5264,
+        "BytesSent": 455517,
+        "IncomingErrors": 0,
+        "OutgoingErrors": 0,
+        "OutgoingDiscarded": 0,
+        "IsReceiveOnly": false,
+        "TcpConnectionCount": 0,
+        "Ips": [ { "Address": "172.20.0.1" } ]
+      }
+    ],
+    "TcpConnections": 0
+  }
+}

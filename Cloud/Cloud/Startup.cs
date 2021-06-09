@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
@@ -11,6 +13,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -71,8 +74,10 @@ namespace Cloud
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(options =>
             {
                 options.LoginPath = new PathString("/Login");
+                options.ExpireTimeSpan = TimeSpan.Zero;
             });
             services.AddDbContext<ApplicationDbContext>();
+            services.AddSession();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -96,6 +101,7 @@ namespace Cloud
 
             app.UseAuthorization();
             app.UseAuthentication();
+            app.UseSession();
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapRazorPages();
@@ -110,8 +116,7 @@ namespace Cloud
                     OnFileCompleteAsync = async eventContext =>
                     {
                         var file = await eventContext.GetFileAsync();
-
-                        await FileUploadCompleted(file, env, eventContext.CancellationToken);
+                        await FileUploadCompleted(file, env, eventContext.CancellationToken,eventContext.HttpContext);
                         var terminationStore = (ITusTerminationStore) eventContext.Store;
                         await terminationStore.DeleteFileAsync(file.Id, eventContext.CancellationToken);
                     }
@@ -119,9 +124,13 @@ namespace Cloud
             });
         }
 
-        private async Task FileUploadCompleted(ITusFile file, IWebHostEnvironment env, CancellationToken cs)
+        private async Task FileUploadCompleted(ITusFile file, IWebHostEnvironment env, CancellationToken cs,HttpContext ctx)
         {
             var meta = await file.GetMetadataAsync(cs);
+            
+            var clientComponent = meta["hash"].GetString(Encoding.UTF8);
+            var serverComponent = ctx.Session.GetString("ServerFileKeyComponent");
+            
             var user = await UserManager.GetUserById(Convert.ToInt32(meta["uid"].GetString(Encoding.UTF8)));
             await using var stream = await file.GetContentAsync(cs);
             var filepath = env.ContentRootPath + "/Data/" + user.Id + "/" + meta["path"].GetString(Encoding.UTF8);
@@ -142,6 +151,7 @@ namespace Cloud
                 await db.SaveChangesAsync();
                 await using var fileStream = new FileStream(filepath + "/" + meta["filename"].GetString(Encoding.UTF8),
                     FileMode.Create);
+                
                 await stream.CopyToAsync(fileStream, cs);
                 await fileStream.DisposeAsync();
             }
