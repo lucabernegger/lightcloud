@@ -11,17 +11,8 @@
         return;
     
 }
-<div id="markbuttons" style="opacity: 0" class="form-row align-items-center">
-    <form method="post" asp-page-handler="DownloadMarked" class="d-inline-flex mt-2">
-        <input type="hidden" name="markedJson" class="markedJson" />
-        <button type="submit" class="btn btn-sm btn-info" disabled=""><i class="fas fa-cloud-download-alt"></i> Download Selected</button>
-    </form>
-    <form method="post" asp-page-handler="DeleteMarked" class="d-inline-flex mt-2">
-        <input type="hidden" name="markedJson" class="markedJson" />
-        <button type="submit" class="btn btn-sm btn-danger " disabled=""><i class="fas fa-trash text-white"></i> Delete Selected</button>
-    </form>
-</div>
-<table class="table table-hover table-responsive" style="font-size: 1.2em" id="table">
+
+<table class="table table-hover table-responsive shadow" style="font-size: 1.2em" id="table">
     <thead>
         <tr>
             <td><input type="checkbox" class="form-check-input mark-all-checkbox"/></td>
