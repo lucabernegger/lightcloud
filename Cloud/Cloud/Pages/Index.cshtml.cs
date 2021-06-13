@@ -123,8 +123,6 @@ namespace Cloud.Pages
                     ShareLink = FileMethods.Sha256(path),
                     Key = sKey.Encrypt(key)
                 };
-                Debug.WriteLine("KEYDEC: " + sKey);
-                Debug.WriteLine("KEYENC: " + share.Key);
                 _db.Shares.Add(share);
                 await _db.SaveChangesAsync();
                 key = null;
