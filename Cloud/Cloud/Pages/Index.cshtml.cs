@@ -38,7 +38,7 @@ namespace Cloud.Pages
         public async Task OnPostCreateFolder(string folderName)
         {
             var user = await User.GetUser();
-            var targetFolderName = $"{_env.ContentRootPath}/Data/{user.Id}/{Path}{folderName}";
+            var targetFolderName = $"{_env.ContentRootPath}/Data/{user.Id}/{Path}/{folderName}";
             Directory.CreateDirectory(targetFolderName);
             foreach (var dbFile in _db.Files.Where(o => o.Path == targetFolderName && o.UserId == user.Id))
             {

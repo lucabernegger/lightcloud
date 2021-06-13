@@ -3,6 +3,7 @@
 @using Microsoft.Extensions.Hosting
 @using Microsoft.AspNetCore.Authentication
 @using Microsoft.AspNetCore.Http
+@using System.Diagnostics
 @model IndexModel
 @inject ApplicationDbContext _db;
 @inject IHostEnvironment _env;
@@ -16,8 +17,6 @@
         
     }
     ViewData["Title"] = "Dashboard";
-    //string currentPath = _env.ContentRootPath + "/Data/" + user.Id + "/" + Model.Path;
-
 }
 
 <style>

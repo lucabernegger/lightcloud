@@ -177,7 +177,7 @@ namespace Cloud
                 var f = new DbFile()
                 {
                     Name = meta["filename"].GetString(Encoding.UTF8),
-                    Path = filepath,
+                    Path = filepath.Replace(System.IO.Path.AltDirectorySeparatorChar, System.IO.Path.DirectorySeparatorChar),
                     Filename = meta["filename"].GetString(Encoding.UTF8),
                     LastModified = DateTime.Now,
                     Size = stream.Length,
