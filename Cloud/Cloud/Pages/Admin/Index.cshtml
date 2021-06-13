@@ -93,8 +93,12 @@
     <script>
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.has('addUser_success')) {
-            toastr.success(urlParams.get('addUser_success'), { timeOut: 60000 });
             window.history.replaceState(null, null, window.location.pathname);
+            Swal.fire(
+                'User created',
+                "User created successfully!<br>Password:<input type='text' readonly class='form-control text-center' value='" + urlParams.get('addUser_success')+"'>",
+                'success'
+            );
         }
     </script>
 }
