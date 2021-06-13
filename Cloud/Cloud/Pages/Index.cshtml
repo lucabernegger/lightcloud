@@ -2,11 +2,20 @@
 @using Cloud.Models
 @using Microsoft.Extensions.Hosting
 @using System.Text.Encodings.Web
+@using Microsoft.AspNetCore.Authentication
+@using Microsoft.AspNetCore.Http
 @model IndexModel
 @inject ApplicationDbContext _db;
 @inject IHostEnvironment _env;
 @{
     var user = await User.GetUser();
+    if (string.IsNullOrEmpty(HttpContext.Session.GetString("ServerFileKeyComponent")))
+    {
+        await HttpContext.SignOutAsync();
+        HttpContext.Response.Redirect("/Login");
+        return;
+        
+    }
     ViewData["Title"] = "Dashboard";
     //string currentPath = _env.ContentRootPath + "/Data/" + user.Id + "/" + Model.Path;
 
@@ -31,7 +40,7 @@
     </div>
 </div>
 <div id="files_table"></div>
-
+<p>Session: @HttpContext.Session.GetString("ServerFileKeyComponent")</p>
 <div class="modal fade" id="fileUploadModal" tabindex="-1" aria-labelledby="fileUploadModalLabel" style="display: none;" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">

@@ -72,14 +72,16 @@ namespace Cloud
                 x.MultipartHeadersLengthLimit = int.MaxValue;
             });
             services.AddRazorPages().AddRazorRuntimeCompilation();
+            services.AddDbContext<ApplicationDbContext>();
+            services.AddSession(options =>
+            {
+                options.IdleTimeout = TimeSpan.FromMinutes(5);
+            });
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(options =>
             {
                 options.LoginPath = new PathString("/Login");
-                options.ExpireTimeSpan = TimeSpan.FromMinutes(1);
-                options.SlidingExpiration = true;
             });
-            services.AddDbContext<ApplicationDbContext>();
-            services.AddSession();
+            
 
         }
 
@@ -168,56 +170,7 @@ namespace Cloud
 
             await stream.DisposeAsync();
         }
-
-        public static byte[] Decrypt(byte[] input, string key)
-        {
-            Console.WriteLine("KEY: " + key);
-            var content = input;
-            using (var aes = new AesCryptoServiceProvider())
-            {
-                aes.Key = Encoding.UTF8.GetBytes(key) ;
-                aes.Mode = CipherMode.CBC;
-                aes.Padding = PaddingMode.PKCS7;
-
-                using (var memStream = new MemoryStream())
-                {
-                    var cstream = new CryptoStream(memStream, aes.CreateDecryptor(), CryptoStreamMode.Write);
-                    cstream.Write(content, 0, content.Length);
-                    cstream.FlushFinalBlock();
-                    cstream.Close();
-                    var output = memStream.ToArray();
-                    memStream.Dispose();
-                    return output;
-                }
-            }
-        }
-
-        public static byte[] Encrypt(Stream input, string key)
-        {
-            
-                Console.WriteLine("KEY: " + key);
-
-                var content = ReadToEnd(input);
-                using (var aes = new AesCryptoServiceProvider())
-                {
-                    aes.Key = Encoding.UTF8.GetBytes(key);
-                    aes.Mode = CipherMode.CBC;
-                    aes.Padding = PaddingMode.PKCS7;
-
-                    using (var memStream = new MemoryStream())
-                    {
-                        var cstream = new CryptoStream(memStream, aes.CreateEncryptor(), CryptoStreamMode.Write);
-                        cstream.Write(content, 0, content.Length);
-                        cstream.FlushFinalBlock();
-                        cstream.Close();
-                        var output = memStream.ToArray();
-                        memStream.Dispose();
-                        return output;
-                    }
-                }
-            
-        }
-
+        
         public static byte[] ReadToEnd(System.IO.Stream stream)
         {
             long originalPosition = 0;

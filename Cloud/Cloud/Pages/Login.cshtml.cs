@@ -38,13 +38,11 @@ namespace Cloud.Pages
                 if (user.IsAdmin) identity.AddClaim(new Claim(ClaimTypes.Role, "Admin"));
 
                 var principal = new ClaimsPrincipal(identity);
-                /*var authenticationProperties = new AuthenticationProperties
+                var authenticationProperties = new AuthenticationProperties
                 {
-                    AllowRefresh = true,
-                    ExpiresUtc = DateTimeOffset.Now.AddMinutes(1),
+                    ExpiresUtc = DateTimeOffset.Now.AddMinutes(5),
                     IsPersistent = false,
-                    IssuedUtc = DateTimeOffset.Now
-                }; */
+                }; 
                 await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
                 var hash = UserManager.Sha512(password);
                 var serverKeyComponent = UserManager.GenerateRandomPassword();
