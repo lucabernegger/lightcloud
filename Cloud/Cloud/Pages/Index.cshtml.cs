@@ -16,7 +16,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
-using FileShare = System.IO.FileShare;
 
 namespace Cloud.Pages
 {
@@ -116,22 +115,25 @@ namespace Cloud.Pages
                 var sKey = UserManager.GenerateRandomCryptoString(16);
                 bytes = Crypto.EncryptByteArray(Encoding.UTF8.GetBytes(sKey), bytes);
                 await System.IO.File.WriteAllBytesAsync(@$"{_env.ContentRootPath}/Data/{user.Id}/{path}.share", bytes, cs);
-                key = null;
-                clientComponent = null;
-                serverComponent = null;
-                await file.DisposeAsync();
-                GC.Collect();
+                
                 var share = new Models.FileShare
                 {
                     ExpiryDate = expiryDate,
                     File = @$"{user.Id}/" + path,
                     ShareLink = FileMethods.Sha256(path),
-                    Key = sKey
+                    Key = sKey.Encrypt(key)
                 };
+                Debug.WriteLine("KEYDEC: " + sKey);
+                Debug.WriteLine("KEYENC: " + share.Key);
                 _db.Shares.Add(share);
                 await _db.SaveChangesAsync();
-                return Redirect(
-                    $"/Index?download_link={UrlEncoder.Default.Encode(Startup.Settings.BaseDomain + "Share/" + share.ShareLink)}");
+                key = null;
+                clientComponent = null;
+                serverComponent = null;
+                await file.DisposeAsync();
+                GC.Collect();
+                string link = (Startup.Settings.BaseDomain + "Share/download?hash=" + UrlEncoder.Default.Encode(share.ShareLink)+"&p="+UrlEncoder.Default.Encode(sKey));
+                return Redirect($"/Index?download_link={link}");
             }
 
             return Page();

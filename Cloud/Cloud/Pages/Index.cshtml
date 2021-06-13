@@ -1,7 +1,6 @@
 ﻿@page
 @using Cloud.Models
 @using Microsoft.Extensions.Hosting
-@using System.Text.Encodings.Web
 @using Microsoft.AspNetCore.Authentication
 @using Microsoft.AspNetCore.Http
 @model IndexModel
@@ -124,8 +123,9 @@
 
     <script>
         const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.has('download_link')) {
-            let a = `<a href='${urlParams.get('download_link')}'>Link</a><br><input type='text' class='form-control' value='${urlParams.get('download_link') + "&p="+urlParams.get('p')}' readonly>`;
+        if (urlParams.has('download_link') && urlParams.has('p')) {
+            const link = urlParams.get('download_link') + "&p=" + urlParams.get("p");
+            let a = `<a href='${link}'>Link</a><br><input type='text' class='form-control' value='${link}' readonly>`;
             Swal.fire(
                 'Shared',
                 a,

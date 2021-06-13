@@ -1,7 +1,7 @@
 ﻿@using Microsoft.AspNetCore.Hosting
 @using System.IO
+@using Cloud.Extensions
 @using Cloud.Models
-@using System.Diagnostics
 @inject ApplicationDbContext _db;
 @inject IWebHostEnvironment _env;
 @{
@@ -116,7 +116,7 @@
                 </td>
                 <td>@FileMethods.BytesToString(file.Size)</td>
                 <td>@file.LastModified.ToShortDateString()</td>
-                <td>@(isShared ? Html.Raw($"<i class='fas fa-share-alt ml-1 link-primary' onclick='copy(\"{FileMethods.GetSharedLink(path, user.Id)}\")'></i>") : "")</td>
+                <td>@(isShared ? Html.Raw($"<i class='fas fa-share-alt ml-1 link-primary' onclick='copy(\"{FileMethods.GetSharedLink(path, user,this.Context)}\")'></i>") : "")</td>
             </tr>
 
         }

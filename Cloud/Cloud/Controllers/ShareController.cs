@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web;
 using Cloud.Extensions;
 using Cloud.Models;
 using Microsoft.AspNetCore.Hosting;
@@ -25,8 +27,8 @@ namespace Cloud.Controllers
         }
 
 
-        [HttpGet("{hash}")]
-        public async Task<IActionResult> Download(string hash)
+        [HttpGet("download")]
+        public async Task<IActionResult> Download(string hash,string p)
         {
             var dbFile = _db.Shares.FirstOrDefault(o => o.ShareLink == hash);
             if (dbFile is not null)
@@ -35,6 +37,7 @@ namespace Cloud.Controllers
                 {
                     _db.Shares.Remove(dbFile);
                     await _db.SaveChangesAsync();
+                    System.IO.File.Delete(@$"{_env.ContentRootPath}/Data/{dbFile.File}.share");
                     return NotFound("File not found");
                 }
 
@@ -42,7 +45,7 @@ namespace Cloud.Controllers
                     FileAccess.Read, FileShare.ReadWrite);
                 var bytes = file.ReadToEnd();
                 await file.DisposeAsync();
-                bytes = Crypto.DecryptByteArray(Encoding.UTF8.GetBytes(dbFile.Key), bytes);
+                bytes = Crypto.DecryptByteArray(Encoding.UTF8.GetBytes(p), bytes);
                 return File(bytes, "application/" + Path.GetExtension(Path.GetExtension(dbFile.File)),
                     Path.GetFileName(dbFile.File));
             }

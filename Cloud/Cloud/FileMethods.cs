@@ -1,10 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Encodings.Web;
+using Cloud.Extensions;
+using Cloud.Migrations;
 using Cloud.Models;
+using Microsoft.AspNetCore.Http;
 
 namespace Cloud
 {
@@ -59,11 +62,15 @@ namespace Cloud
             return db.Shares.Any(o => o.File == p);
         }
 
-        public static string GetSharedLink(string path, int userid)
+        public static string GetSharedLink(string path, User user,HttpContext ctx)
         {
             using var db = new ApplicationDbContext();
-            var p = @$"{userid}/{path}";
-            return Startup.Settings.BaseDomain + "Share/" + db.Shares.FirstOrDefault(o => o.File == p)?.ShareLink;
+            var p = @$"{user.Id}/{path}";
+            var clientComponent = ctx.Request.Cookies["ClientFileKeyComponent"];
+            var serverComponent = ctx.Session.GetString("ServerFileKeyComponent");
+            var key = user.FilePassword.Decrypt(clientComponent.Decrypt(serverComponent));
+            var dbshare = db.Shares.FirstOrDefault(o => o.File == p);
+            return Startup.Settings.BaseDomain + "Share/download?hash=" + UrlEncoder.Default.Encode(dbshare?.ShareLink)+"&p="+ UrlEncoder.Default.Encode(dbshare.Key.Decrypt(key));
         }
     }
 }

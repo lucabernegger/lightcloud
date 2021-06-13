@@ -13,7 +13,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -133,10 +132,7 @@ namespace Cloud
         private void CheckIfNewInstallation()
         {
             using var db = new ApplicationDbContext();
-            #if (!DEBUG)
-            db.Database.Migrate();
-            #endif
-
+            
             if (!db.Users.Any())
             {
                 var pw = UserManager.GenerateRandomPassword();
