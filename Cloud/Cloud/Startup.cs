@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -113,7 +114,7 @@ namespace Cloud
             });
             app.UseTus(httpContext => new DefaultTusConfiguration
             {
-                Store = new TusDiskStore(@"F:\Repos\cloud\Cloud\Cloud\tmp", true),
+                Store = new TusDiskStore(Settings.TusPath, true),
                 UrlPath = "/upload",
                 Events = new Events
                 {
@@ -132,6 +133,10 @@ namespace Cloud
         private void CheckIfNewInstallation()
         {
             using var db = new ApplicationDbContext();
+            #if (!DEBUG)
+            db.Database.Migrate();
+            #endif
+
             if (!db.Users.Any())
             {
                 var pw = UserManager.GenerateRandomPassword();
@@ -146,6 +151,9 @@ namespace Cloud
                     LastLogin = DateTime.MinValue,
                     FilePassword = UserManager.GenerateRandomCryptoString(16).Encrypt(pw.Sha512())
                 });
+                Directory.CreateDirectory("Data");
+                Directory.CreateDirectory("Data/1");
+                Directory.CreateDirectory(Settings.TusPath);
                 db.SaveChanges();
                 Console.ForegroundColor = ConsoleColor.Yellow;
                 Console.WriteLine("[INFO] -------- Generated Admin-account ------- ");
@@ -168,7 +176,6 @@ namespace Cloud
             await using var stream = await file.GetContentAsync(cs);
             var filepath = env.ContentRootPath + "/Data/" + user.Id + "/" + meta["path"].GetString(Encoding.UTF8);
             var size = db.Files.Where(o=>o.UserId == user.Id).ToList().Sum(o => o.Size);
-            Console.WriteLine(size);
             if (stream.Length + size < user.MaxFileBytes)
             {
                 var f = new DbFile()

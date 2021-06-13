@@ -1,3 +1,4 @@
 {
-  "BaseDomain": "https://localhost:44395/"
+  "BaseDomain": "https://localhost:44395/",
+  "TusPath": "/media/usb/aspnet/cloud/tmp/" 
 }
