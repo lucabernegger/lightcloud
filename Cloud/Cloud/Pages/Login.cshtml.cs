@@ -50,7 +50,7 @@ namespace Cloud.Pages
                 return RedirectToPage("/Index");
             }
 
-            return Redirect("/Index?" + UrlEncoder.Default.Encode("Email oder Passwort falsch!"));
+            return Redirect("/Login?error=" + UrlEncoder.Default.Encode("Password or username wrong"));
         }
     }
 }
