@@ -1,6 +1,8 @@
 ﻿@page
 @model Cloud.Pages.UserSettingsModel
 @{
+    var user = await User.GetUser();
+
 }
 <div class="card mt-3 text-white" style="background: #59606D">
     <div class="card-header">
@@ -17,6 +19,30 @@
 
                 <label for="newPasswordRepeat">Repeat Password</label>
                 <input type="password" id="newPasswordRepeat" class="form-control" asp-for="SetPasswordData.NewPasswordRepeat"/>
+            </div>
+            <button type="submit" class="btn btn-primary w-100 mt-3">Save</button>
+        </form>
+    </div>
+</div>
+<div class="card mt-3 text-white" style="background: #59606D">
+    <div class="card-header">
+        <h4>Set Password</h4>
+    </div>
+    <div class="card-body text-white">
+        <form method="post" asp-page-handler="SetSettings">
+            <div class="form-group">
+                <label for="showFileExtentions">Show known File Extensions</label>
+                @if (user.ShowKnownFileExtensions)
+                {
+                    <input type="checkbox" id="showFileExtentions" class="form-check-input" asp-for="SettingsData.ShowFileExtensions" checked=""/>
+
+                }
+                else
+                {
+                    <input type="checkbox" id="showFileExtentions" class="form-check-input" asp-for="SettingsData.ShowFileExtensions" />
+
+                }
+                
             </div>
             <button type="submit" class="btn btn-primary w-100 mt-3">Save</button>
         </form>

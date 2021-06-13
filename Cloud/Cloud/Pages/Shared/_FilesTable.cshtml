@@ -64,6 +64,7 @@
             var path = System.IO.Path.GetRelativePath(_env.ContentRootPath + "/Data/" + user.Id + "/", file.Path + "/" + file.Filename);
             var isShared = FileMethods.IsFileShared(path, user.Id);
             var extension = System.IO.Path.GetExtension(file.Path + file.Filename);
+            var name = (user.ShowKnownFileExtensions) ? file.Name : file.Name.Remove(file.Name.LastIndexOf("."));
             <tr>
                 <td data-id="@file.Id" class=""><input type="checkbox" class="marker-checkbox form-check-input"/></td>
                 <td>
@@ -80,7 +81,7 @@
 
                             }
 
-                            @file.Name
+                            @name
                         </a>
                     </span>
                 </td>

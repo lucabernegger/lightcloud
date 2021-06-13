@@ -1,5 +1,9 @@
+using System.Diagnostics;
+using System.Linq;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
 using Cloud.Extensions;
+using Cloud.Migrations;
 using Cloud.Models;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -19,6 +23,7 @@ namespace Cloud.Pages
             _db = db;
         }
         [BindProperty] public SetPasswordData SetPasswordData { get; set; }
+        [BindProperty] public SettingsData SettingsData { get; set; }
 
         public async Task<IActionResult> OnPostSetPassword()
         {
@@ -39,6 +44,15 @@ namespace Cloud.Pages
             await HttpContext.SignOutAsync();
             return Redirect("/Login");
         }
+
+        public async Task<IActionResult> OnPostSetSettings()
+        {
+            var user = await User.GetUser();
+            user.ShowKnownFileExtensions = SettingsData.ShowFileExtensions;
+            _db.Users.Update(user);
+            await _db.SaveChangesAsync();
+            return Page();
+        }
     }
 
     public class SetPasswordData
@@ -46,5 +60,10 @@ namespace Cloud.Pages
         public string OldPassword { get; set; }
         public string NewPassword { get; set; }
         public string NewPasswordRepeat { get; set; }
+    }
+
+    public class SettingsData
+    {
+        public bool ShowFileExtensions { get; set; }
     }
 }

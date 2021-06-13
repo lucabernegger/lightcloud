@@ -12,5 +12,6 @@ namespace Cloud.Models
         public bool IsAdmin { get; set; }
         public long MaxFileBytes { get; set; }
         public DateTime LastLogin { get; set; }
+        public bool ShowKnownFileExtensions { get; set; } = true;
     }
 }
