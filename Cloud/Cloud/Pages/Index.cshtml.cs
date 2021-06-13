@@ -77,6 +77,13 @@ namespace Cloud.Pages
                 if (f == targetFileName)
                 {
                     _db.Remove(file);
+                    var dbfile = _db.Shares.FirstOrDefault(o => o.File == @$"{user.Id}/" + file.Path);
+                    if (dbfile is not null)
+                    {
+                        _db.Shares.Remove(dbfile);
+                        System.IO.File.Delete(@$"{_env.ContentRootPath}/Data/{dbfile.File}.share");
+                        await _db.SaveChangesAsync();
+                    }
                 }
 
             }
@@ -162,6 +169,13 @@ namespace Cloud.Pages
                     continue;
 
                 var targetFileName = $"{dbfile.Path}{dbfile.Filename}";
+                var dbshare = _db.Shares.FirstOrDefault(o => o.File == @$"{user.Id}/" + dbfile.Path);
+                if (dbshare is not null)
+                {
+                    _db.Shares.Remove(dbshare);
+                    System.IO.File.Delete(@$"{_env.ContentRootPath}/Data/{dbshare.File}.share");
+                    await _db.SaveChangesAsync();
+                }
                 _db.Remove(dbfile);
                 System.IO.File.Delete(targetFileName);
             }
