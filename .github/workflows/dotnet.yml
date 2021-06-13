@@ -18,7 +18,7 @@ jobs:
       with:
         dotnet-version: 5.0.x
     - name: Restore dependencies
-      run: dotnet restore Cloud.sln
+      run: dotnet restore ./Cloud/Cloud.sln
     - name: Build
-      run: dotnet build Cloud.sln --no-restore
+      run: dotnet build ./Cloud/Cloud.sln --no-restore
 
