@@ -1,7 +1,10 @@
 ﻿using System;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Security.Claims;
 using System.Security.Cryptography;
+using System.Text;
 using System.Threading.Tasks;
 using Cloud.Models;
 using Microsoft.AspNetCore.Cryptography.KeyDerivation;
@@ -64,6 +67,16 @@ namespace Cloud
             return new string(Enumerable.Repeat(chars, 5)
                 .Select(s => s[Random.Next(s.Length)]).ToArray());
         }
+        public static string GenerateRandomCryptoString(int size = 32)
+        {
+            using (RandomNumberGenerator rng = new RNGCryptoServiceProvider())
+            {
+                byte[] tokenData = new byte[size];
+                rng.GetBytes(tokenData);
+
+               return Convert.ToBase64String(tokenData);
+            }
+        }
 
         public static async Task<User> GetUser(ClaimsPrincipal claimsPrincipal)
         {
@@ -73,32 +86,7 @@ namespace Cloud
 
             return null;
         }
-
-        public static async Task SetNewPassword(int id, string password)
-        {
-            await using var db = new ApplicationDbContext();
-            var user = await db.Users.FindAsync(id);
-            var hashedPassword = GenerateHashAndSalt(password);
-            user.Password = hashedPassword[0];
-            user.Salt = hashedPassword[1];
-            await db.SaveChangesAsync();
-        }
-
-        public static async Task SetAdmin(int id, bool toggle)
-        {
-            await using var db = new ApplicationDbContext();
-            var user = await db.Users.FindAsync(id);
-            user.IsAdmin = toggle;
-            await db.SaveChangesAsync();
-        }
-
-        public static async Task SetNewName(int id, string name)
-        {
-            await using var db = new ApplicationDbContext();
-            var user = await db.Users.FindAsync(id);
-            user.Name = name;
-            await db.SaveChangesAsync();
-        }
+        
     }
 
     public static class UserManagerHelper

@@ -1,11 +1,14 @@
 using System;
+using System.Diagnostics;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
+using Cloud.Extensions;
 using Cloud.Models;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
@@ -37,6 +40,14 @@ namespace Cloud.Pages
 
                 var principal = new ClaimsPrincipal(identity);
                 await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
+                var hash = password.Sha512();
+                var serverKeyComponent = UserManager.GenerateRandomCryptoString();
+                
+                HttpContext.Session.SetString("ServerFileKeyComponent", serverKeyComponent);
+                HttpContext.Response.Cookies.Append("ClientFileKeyComponent", hash.Encrypt(serverKeyComponent));
+                password = null;
+                hash = null;
+                GC.Collect();
                 return RedirectToPage("/Index");
             }
 

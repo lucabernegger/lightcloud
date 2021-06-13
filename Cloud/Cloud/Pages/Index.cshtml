@@ -2,13 +2,22 @@
 @using Cloud.Models
 @using Microsoft.Extensions.Hosting
 @using System.Text.Encodings.Web
+@using Microsoft.AspNetCore.Authentication
+@using Microsoft.AspNetCore.Http
 @model IndexModel
 @inject ApplicationDbContext _db;
 @inject IHostEnvironment _env;
 @{
     var user = await User.GetUser();
+    if (string.IsNullOrEmpty(HttpContext.Session.GetString("ServerFileKeyComponent")))
+    {
+        await HttpContext.SignOutAsync();
+        HttpContext.Response.Redirect("/Login");
+        return;
+        
+    }
     ViewData["Title"] = "Dashboard";
-    string currentPath = _env.ContentRootPath + "/Data/" + user.Id + "/" + Model.Path;
+    //string currentPath = _env.ContentRootPath + "/Data/" + user.Id + "/" + Model.Path;
 
 }
 
@@ -25,13 +34,22 @@
 <button type="button" class="btn btn-sm btn-primary" data-mdb-toggle="modal" data-mdb-target="#newFolderModal">
     New Folder
 </button>
+<div id="markbuttons" style="opacity: 0" class="form-row align-items-center">
+    <form method="post" asp-page-handler="DownloadMarked" class="d-inline-flex mt-2">
+        <input type="hidden" name="markedJson" class="markedJson" />
+        <button type="submit" class="btn btn-sm btn-info" disabled=""><i class="fas fa-cloud-download-alt"></i> Download Selected</button>
+    </form>
+    <form method="post" asp-page-handler="DeleteMarked" class="d-inline-flex mt-2">
+        <input type="hidden" name="markedJson" class="markedJson" />
+        <button type="submit" class="btn btn-sm btn-danger " disabled=""><i class="fas fa-trash text-white"></i> Delete Selected</button>
+    </form>
+</div>
 <div class="progress mt-2 mb-2" style="display: none; height: 2vh;" id="progress1">
     <div class="progress-bar" style="display: none; min-width: 0;" id="uprogress">
 
     </div>
 </div>
 <div id="files_table"></div>
-
 <div class="modal fade" id="fileUploadModal" tabindex="-1" aria-labelledby="fileUploadModalLabel" style="display: none;" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
@@ -56,13 +74,13 @@
                 <div class="modal-body">
                     <input type="hidden" name="path" id="shareFile" />
                     <label for="shareExpiry">Expires</label>
-                    <input type="date" name="expiryDate" class="form-control" id="shareExpiry" />
+                    <input type="date" name="expiryDate" class="form-control" id="shareExpiry"  required/>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-mdb-dismiss="modal">
                         Close
                     </button>
-                    <button type="submit" class="btn btn-primary">Upload</button>
+                    <button type="submit" class="btn btn-primary">Share</button>
                 </div>
             </form>
 
@@ -107,7 +125,7 @@
     <script>
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.has('download_link')) {
-            let a = `<a href='${urlParams.get('download_link')}'>Link</a><br><input type='text' class='form-control' value='${urlParams.get('download_link')}' readonly>`;
+            let a = `<a href='${urlParams.get('download_link')}'>Link</a><br><input type='text' class='form-control' value='${urlParams.get('download_link') + "&p="+urlParams.get('p')}' readonly>`;
             Swal.fire(
                 'Shared',
                 a,
@@ -144,7 +162,8 @@
                 uppy.setFileMeta(file.id,
                     {
                         uid: '@user.Id',
-                        path: '@Model.Path'
+                        path: '@Model.Path',
+                        hash: getCookie("ClientFileKeyComponent")
                     });
             });
         var checkedItems = [];
@@ -200,7 +219,11 @@
             document.body.removeChild(el);
             toastr.success("Copied link to clipboard");
         }
-
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+        }
         loadFiles();
         
     </script>

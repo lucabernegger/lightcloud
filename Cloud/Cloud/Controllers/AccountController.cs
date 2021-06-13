@@ -11,6 +11,7 @@ namespace Cloud.Controllers
         [HttpGet("/Logout")]
         public async Task<IActionResult> Logout()
         {
+            HttpContext.Session.Remove("ServerFileKeyComponent");
             await HttpContext.SignOutAsync();
             return RedirectToPage("/Index");
         }

@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using Cloud.Extensions;
 using Cloud.Models;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
@@ -35,7 +36,8 @@ namespace Cloud.Pages.Admin
                 Name = Data.Name,
                 Password = hashed[0],
                 Salt = hashed[1],
-                LastLogin = DateTime.MinValue
+                LastLogin = DateTime.MinValue,
+                FilePassword = UserManager.GenerateRandomCryptoString(16).Encrypt(pw.Sha512())
             };
             _db.Users.Add(user);
             await _db.SaveChangesAsync();
