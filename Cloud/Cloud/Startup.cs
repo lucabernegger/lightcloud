@@ -13,7 +13,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -127,6 +126,34 @@ namespace Cloud
                     }
                 }
             });
+            CheckIfNewInstallation();
+        }
+
+        private void CheckIfNewInstallation()
+        {
+            using var db = new ApplicationDbContext();
+            if (!db.Users.Any())
+            {
+                var pw = UserManager.GenerateRandomPassword();
+                var hashed = UserManager.GenerateHashAndSalt(pw);
+                db.Users.Add(new()
+                {
+                    IsAdmin = true,
+                    MaxFileBytes = FileMethods.GigabyteToByte(10),
+                    Name = "admin",
+                    Password = hashed[0],
+                    Salt = hashed[1],
+                    LastLogin = DateTime.MinValue,
+                    FilePassword = UserManager.GenerateRandomCryptoString(16).Encrypt(pw.Sha512())
+                });
+                db.SaveChanges();
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.WriteLine("[INFO] -------- Generated Admin-account ------- ");
+                Console.WriteLine("[INFO] Username: admin");
+                Console.WriteLine("[INFO] Password: "+pw);
+                Console.WriteLine("[INFO] -------- Generated Admin-account ------- ");
+                Console.ForegroundColor = ConsoleColor.White;
+            }
         }
 
         private async Task FileUploadCompleted(ITusFile file, IWebHostEnvironment env, CancellationToken cs,
