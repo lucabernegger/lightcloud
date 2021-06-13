@@ -45,6 +45,9 @@ namespace Cloud.Pages
                 
                 HttpContext.Session.SetString("ServerFileKeyComponent", serverKeyComponent);
                 HttpContext.Response.Cookies.Append("ClientFileKeyComponent", hash.Encrypt(serverKeyComponent));
+                password = null;
+                hash = null;
+                GC.Collect();
                 return RedirectToPage("/Index");
             }
 

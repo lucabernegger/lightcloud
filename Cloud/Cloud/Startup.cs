@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
@@ -132,14 +133,15 @@ namespace Cloud
             HttpContext ctx)
         {
             var meta = await file.GetMetadataAsync(cs);
-
+            await using var db = new ApplicationDbContext();
             var clientComponent = ctx.Request.Cookies["ClientFileKeyComponent"];
             var serverComponent = ctx.Session.GetString("ServerFileKeyComponent");
 
             var user = await UserManager.GetUserById(Convert.ToInt32(meta["uid"].GetString(Encoding.UTF8)));
             await using var stream = await file.GetContentAsync(cs);
             var filepath = env.ContentRootPath + "/Data/" + user.Id + "/" + meta["path"].GetString(Encoding.UTF8);
-            var size = new DirectoryInfo(filepath).GetSizeOfDirectory();
+            var size = db.Files.Where(o=>o.UserId == user.Id).ToList().Sum(o => o.Size);
+            Console.WriteLine(size);
             if (stream.Length + size < user.MaxFileBytes)
             {
                 var f = new DbFile()
@@ -151,14 +153,18 @@ namespace Cloud
                     Size = stream.Length,
                     UserId = user.Id
                 };
-                await using var db = new ApplicationDbContext();
+                
                 db.Files.Add(f);
                 await db.SaveChangesAsync();
                 var k1 = clientComponent.Decrypt(serverComponent);
                 var key = user.FilePassword.Decrypt(k1);
                 var bytesToEnc = stream.ReadToEnd();
-               
-                File.WriteAllBytes(filepath + "/" + meta["filename"].GetString(Encoding.UTF8), Crypto.EncryptByteArray(Encoding.UTF8.GetBytes(key),bytesToEnc));
+                var bytes = Crypto.EncryptByteArray(Encoding.UTF8.GetBytes(key), bytesToEnc);
+                key = null;
+                k1 = null;
+                await stream.DisposeAsync();
+                GC.Collect();
+                File.WriteAllBytes(filepath + "/" + meta["filename"].GetString(Encoding.UTF8), bytes);
 
             }
 

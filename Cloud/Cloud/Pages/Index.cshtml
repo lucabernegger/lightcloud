@@ -64,13 +64,13 @@
                 <div class="modal-body">
                     <input type="hidden" name="path" id="shareFile" />
                     <label for="shareExpiry">Expires</label>
-                    <input type="date" name="expiryDate" class="form-control" id="shareExpiry" />
+                    <input type="date" name="expiryDate" class="form-control" id="shareExpiry"  required/>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-mdb-dismiss="modal">
                         Close
                     </button>
-                    <button type="submit" class="btn btn-primary">Upload</button>
+                    <button type="submit" class="btn btn-primary">Share</button>
                 </div>
             </form>
 
@@ -115,7 +115,7 @@
     <script>
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.has('download_link')) {
-            let a = `<a href='${urlParams.get('download_link')}'>Link</a><br><input type='text' class='form-control' value='${urlParams.get('download_link')}' readonly>`;
+            let a = `<a href='${urlParams.get('download_link')}'>Link</a><br><input type='text' class='form-control' value='${urlParams.get('download_link') + "&p="+urlParams.get('p')}' readonly>`;
             Swal.fire(
                 'Shared',
                 a,

@@ -66,11 +66,11 @@ namespace Cloud
             return new string(Enumerable.Repeat(chars, 5)
                 .Select(s => s[Random.Next(s.Length)]).ToArray());
         }
-        public static string GenerateRandomCryptoString()
+        public static string GenerateRandomCryptoString(int size = 32)
         {
             using (RandomNumberGenerator rng = new RNGCryptoServiceProvider())
             {
-                byte[] tokenData = new byte[32];
+                byte[] tokenData = new byte[size];
                 rng.GetBytes(tokenData);
 
                return Convert.ToBase64String(tokenData);

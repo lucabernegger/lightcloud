@@ -1,6 +1,9 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Cloud.Extensions;
 using Cloud.Models;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
@@ -23,7 +26,7 @@ namespace Cloud.Controllers
 
 
         [HttpGet("{hash}")]
-        public IActionResult Download(string hash)
+        public async Task<IActionResult> Download(string hash)
         {
             var dbFile = _db.Shares.FirstOrDefault(o => o.ShareLink == hash);
             if (dbFile is not null)
@@ -31,14 +34,16 @@ namespace Cloud.Controllers
                 if (dbFile.ExpiryDate < DateTime.Now)
                 {
                     _db.Shares.Remove(dbFile);
-                    _db.SaveChanges();
+                    await _db.SaveChangesAsync();
                     return NotFound("File not found");
                 }
 
-                var file = System.IO.File.Open($"{_env.ContentRootPath}/Data/{dbFile.File}", FileMode.Open,
+                var file = System.IO.File.Open($"{_env.ContentRootPath}/Data/{dbFile.File}.share", FileMode.Open,
                     FileAccess.Read, FileShare.ReadWrite);
-
-                return File(file, "application/" + Path.GetExtension(Path.GetExtension(dbFile.File)),
+                var bytes = file.ReadToEnd();
+                await file.DisposeAsync();
+                bytes = Crypto.DecryptByteArray(Encoding.UTF8.GetBytes(dbFile.Key), bytes);
+                return File(bytes, "application/" + Path.GetExtension(Path.GetExtension(dbFile.File)),
                     Path.GetFileName(dbFile.File));
             }
 
