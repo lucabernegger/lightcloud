@@ -116,7 +116,7 @@ namespace Cloud.Pages
                 var sKey = UserManager.GenerateRandomCryptoString(16);
                 bytes = Crypto.EncryptByteArray(Encoding.UTF8.GetBytes(sKey), bytes);
                 await System.IO.File.WriteAllBytesAsync(@$"{_env.ContentRootPath}/Data/{user.Id}/{path}.share", bytes, cs);
-                
+
                 var share = new Models.FileShare
                 {
                     ExpiryDate = expiryDate,
@@ -131,7 +131,7 @@ namespace Cloud.Pages
                 serverComponent = null;
                 await file.DisposeAsync();
                 GC.Collect();
-                string link = (Startup.Settings.BaseDomain + "Share/download?hash=" + UrlEncoder.Default.Encode(share.ShareLink)+"&p="+UrlEncoder.Default.Encode(sKey));
+                string link = (Startup.Settings.BaseDomain + "Share/download?hash=" + UrlEncoder.Default.Encode(share.ShareLink) + "&p=" + UrlEncoder.Default.Encode(sKey));
                 return Redirect($"/Index?download_link={link}");
             }
 
@@ -192,7 +192,7 @@ namespace Cloud.Pages
             var serverComponent = this.HttpContext.Session.GetString("ServerFileKeyComponent");
             var key = user.FilePassword.Decrypt(clientComponent.Decrypt(serverComponent));
             await using var outStream = new MemoryStream();
-            using (var archive = new ZipArchive(outStream, ZipArchiveMode.Create, true))
+            using (var archive = new ZipArchive(outStream, ZipArchiveMode.Create, false))
             {
                 if (ids != null)
                     foreach (var id in ids)
@@ -221,7 +221,7 @@ namespace Cloud.Pages
             return File(compressedBytes, "application/zip", $"{DateTime.Now.ToShortDateString()}.zip");
         }
 
-        public async Task<IActionResult> OnPostRenameFile(int id,string name)
+        public async Task<IActionResult> OnPostRenameFile(int id, string name)
         {
             var file = await _db.Files.FirstOrDefaultAsync(o => o.Id == id);
             if (file is not null)
@@ -231,6 +231,36 @@ namespace Cloud.Pages
             }
 
             return Page();
+        }
+
+        public async Task<IActionResult> OnGetDownloadFolder()
+        {
+            var user = await User.GetUser();
+            var targetFileName = $"{_env.ContentRootPath}/Data/{user.Id}/{Path}";
+            var clientComponent = this.HttpContext.Request.Cookies["ClientFileKeyComponent"];
+            var serverComponent = this.HttpContext.Session.GetString("ServerFileKeyComponent");
+            var key = user.FilePassword.Decrypt(clientComponent.Decrypt(serverComponent));
+            await using var outStream = new MemoryStream();
+            using (var archive = new ZipArchive(outStream, ZipArchiveMode.Create,false))
+            {
+                foreach (string file in Directory.EnumerateFiles(targetFileName, "*.*", SearchOption.AllDirectories))
+                {
+
+                    var fileInArchive = archive.CreateEntry(new FileInfo(file).Name, CompressionLevel.Optimal);
+                    await using var entryStream = fileInArchive.Open();
+                    var bytesToDec = await System.IO.File.ReadAllBytesAsync(file);
+                    var bytes = Crypto.DecryptByteArray(Encoding.UTF8.GetBytes(key), bytesToDec);
+                    await using var stream = new MemoryStream(bytes);
+                    await using var fileToCompressStream = stream;
+                    await fileToCompressStream.CopyToAsync(entryStream);
+                    await stream.DisposeAsync();
+                }
+                
+            }
+            var compressedBytes = outStream.ToArray();
+
+            return File(compressedBytes, "application/zip", $"{new DirectoryInfo(targetFileName).Name}.zip");
+
         }
     }
 }
