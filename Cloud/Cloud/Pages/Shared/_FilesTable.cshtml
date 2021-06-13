@@ -97,8 +97,12 @@
                     <ul class="dropdown-menu dropdown-menu-end "
                         aria-labelledby="navbarDropdownMenuLink" style="background: #013a63 !important">
                         <li>
+                            <a class="dropdown-item text-white nohover" onclick="openRenameFileModal(@file.Id,'@file.Name')"><i class="far fa-edit text-secondary"></i> Rename</a>
+                        </li>
+                        <li>
                             <a class="dropdown-item text-white nohover" asp-page-handler="DeleteFile" asp-route-path="@path" asp-route-fileName="@file.Name"><i class="fas fa-trash text-danger"></i> Delete</a>
                         </li>
+
                         @if (!isShared)
                         {
                             <li>

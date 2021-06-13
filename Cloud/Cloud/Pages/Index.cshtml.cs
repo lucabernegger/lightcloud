@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
 
@@ -218,6 +219,18 @@ namespace Cloud.Pages
             serverComponent = null;
             GC.Collect();
             return File(compressedBytes, "application/zip", $"{DateTime.Now.ToShortDateString()}.zip");
+        }
+
+        public async Task<IActionResult> OnPostRenameFile(int id,string name)
+        {
+            var file = await _db.Files.FirstOrDefaultAsync(o => o.Id == id);
+            if (file is not null)
+            {
+                file.Name = name;
+                await _db.SaveChangesAsync();
+            }
+
+            return Page();
         }
     }
 }
