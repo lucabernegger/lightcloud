@@ -7,6 +7,9 @@
 @{
     var user = await User.GetUser();
     string currentPath = _env.ContentRootPath + "/Data/" + user.Id + "/" + Model.Path;
+    if(System.IO.File.Exists(currentPath))
+        return;
+    
 }
 <div id="markbuttons" style="opacity: 0" class="form-row align-items-center">
     <form method="post" asp-page-handler="DownloadMarked" class="d-inline-flex mt-2">

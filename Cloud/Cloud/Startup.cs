@@ -61,6 +61,7 @@ namespace Cloud
             },
 
         };
+
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
@@ -74,11 +75,12 @@ namespace Cloud
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(options =>
             {
                 options.LoginPath = new PathString("/Login");
-                options.ExpireTimeSpan = TimeSpan.Zero;
+                options.ExpireTimeSpan = TimeSpan.FromMinutes(1);
+                options.SlidingExpiration = true;
             });
             services.AddDbContext<ApplicationDbContext>();
             services.AddSession();
-            
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -117,26 +119,27 @@ namespace Cloud
                     OnFileCompleteAsync = async eventContext =>
                     {
                         var file = await eventContext.GetFileAsync();
-                        await FileUploadCompleted(file, env, eventContext.CancellationToken,eventContext.HttpContext);
-                        var terminationStore = (ITusTerminationStore) eventContext.Store;
+                        await FileUploadCompleted(file, env, eventContext.CancellationToken, eventContext.HttpContext);
+                        var terminationStore = (ITusTerminationStore)eventContext.Store;
                         await terminationStore.DeleteFileAsync(file.Id, eventContext.CancellationToken);
                     }
                 }
             });
             var db = new ApplicationDbContext();
             var user = db.Users.Find(1);
-            user.FilePassword = UserManager.Encrypt("S0CZH3DBWaSLkPw5",
+            user.FilePassword = UserManager.Encrypt("t6w9z$C&E)H@McQf",
                 UserManager.Sha512("123"));
             db.SaveChanges();
         }
 
-        private async Task FileUploadCompleted(ITusFile file, IWebHostEnvironment env, CancellationToken cs,HttpContext ctx)
+        private async Task FileUploadCompleted(ITusFile file, IWebHostEnvironment env, CancellationToken cs,
+            HttpContext ctx)
         {
             var meta = await file.GetMetadataAsync(cs);
-            
+
             var clientComponent = ctx.Request.Cookies["ClientFileKeyComponent"];
             var serverComponent = ctx.Session.GetString("ServerFileKeyComponent");
-            
+
             var user = await UserManager.GetUserById(Convert.ToInt32(meta["uid"].GetString(Encoding.UTF8)));
             await using var stream = await file.GetContentAsync(cs);
             var filepath = env.ContentRootPath + "/Data/" + user.Id + "/" + meta["path"].GetString(Encoding.UTF8);
@@ -156,82 +159,118 @@ namespace Cloud
                 db.Files.Add(f);
                 await db.SaveChangesAsync();
                 var k1 = UserManager.Decrypt(clientComponent, serverComponent);
-                var key = UserManager.Decrypt(user.FilePassword,k1);
-             
-                /*await using var fileStream = new FileStream(filepath + "/" + meta["filename"].GetString(Encoding.UTF8),
-                    FileMode.Create); */
-                AES_Encrypt(stream, filepath + "/" + meta["filename"].GetString(Encoding.UTF8),Encoding.UTF8.GetBytes(key));
-                
-                 
+                var key = UserManager.Decrypt(user.FilePassword, k1);
+                var bytesToEnc = ReadToEnd(stream);
+               
+                File.WriteAllBytes(filepath + "/" + meta["filename"].GetString(Encoding.UTF8), Crypto.EncryptByteArray(Encoding.UTF8.GetBytes(key),bytesToEnc));
+
             }
 
             await stream.DisposeAsync();
         }
-        private static void AES_Encrypt(Stream fsIn, string outputFile, byte[] passwordBytes)
+
+        public static byte[] Decrypt(byte[] input, string key)
         {
-            byte[] saltBytes = new byte[] { 1, 2, 3, 4, 5, 6, 7, 8 };
-            string cryptFile = outputFile;
-            FileStream fsCrypt = new FileStream(cryptFile, FileMode.Create);
+            Console.WriteLine("KEY: " + key);
+            var content = input;
+            using (var aes = new AesCryptoServiceProvider())
+            {
+                aes.Key = Encoding.UTF8.GetBytes(key) ;
+                aes.Mode = CipherMode.CBC;
+                aes.Padding = PaddingMode.PKCS7;
 
-            RijndaelManaged AES = new RijndaelManaged();
-
-            AES.KeySize = 256;
-            AES.BlockSize = 128;
-
-
-            var key = new Rfc2898DeriveBytes(passwordBytes, saltBytes, 1000);
-            AES.Key = key.GetBytes(AES.KeySize / 8);
-            AES.IV = key.GetBytes(AES.BlockSize / 8);
-            AES.Padding = PaddingMode.Zeros;
-
-            AES.Mode = CipherMode.CBC;
-
-            CryptoStream cs = new CryptoStream(fsCrypt,
-                AES.CreateEncryptor(),
-                CryptoStreamMode.Write);
-            
-            int data;
-            while ((data = fsIn.ReadByte()) != -1)
-                cs.WriteByte((byte)data);
-
-
-            fsIn.Close();
-            cs.Close();
-            fsCrypt.Close();
-
+                using (var memStream = new MemoryStream())
+                {
+                    var cstream = new CryptoStream(memStream, aes.CreateDecryptor(), CryptoStreamMode.Write);
+                    cstream.Write(content, 0, content.Length);
+                    cstream.FlushFinalBlock();
+                    cstream.Close();
+                    var output = memStream.ToArray();
+                    memStream.Dispose();
+                    return output;
+                }
+            }
         }
-        public static Stream AES_Decrypt(string inputFile, byte[] passwordBytes)
+
+        public static byte[] Encrypt(Stream input, string key)
         {
+            
+                Console.WriteLine("KEY: " + key);
 
-            byte[] saltBytes = new byte[] { 1, 2, 3, 4, 5, 6, 7, 8 };
-            FileStream fsCrypt = new FileStream(inputFile, FileMode.Open);
+                var content = ReadToEnd(input);
+                using (var aes = new AesCryptoServiceProvider())
+                {
+                    aes.Key = Encoding.UTF8.GetBytes(key);
+                    aes.Mode = CipherMode.CBC;
+                    aes.Padding = PaddingMode.PKCS7;
 
-            RijndaelManaged AES = new RijndaelManaged();
+                    using (var memStream = new MemoryStream())
+                    {
+                        var cstream = new CryptoStream(memStream, aes.CreateEncryptor(), CryptoStreamMode.Write);
+                        cstream.Write(content, 0, content.Length);
+                        cstream.FlushFinalBlock();
+                        cstream.Close();
+                        var output = memStream.ToArray();
+                        memStream.Dispose();
+                        return output;
+                    }
+                }
+            
+        }
 
-            AES.KeySize = 256;
-            AES.BlockSize = 128;
+        public static byte[] ReadToEnd(System.IO.Stream stream)
+        {
+            long originalPosition = 0;
 
+            if (stream.CanSeek)
+            {
+                originalPosition = stream.Position;
+                stream.Position = 0;
+            }
 
-            var key = new Rfc2898DeriveBytes(passwordBytes, saltBytes, 1000);
-            AES.Key = key.GetBytes(AES.KeySize / 8);
-            AES.IV = key.GetBytes(AES.BlockSize / 8);
-            AES.Padding = PaddingMode.Zeros;
+            try
+            {
+                byte[] readBuffer = new byte[4096];
 
-            AES.Mode = CipherMode.CBC;
+                int totalBytesRead = 0;
+                int bytesRead;
 
-            CryptoStream cs = new CryptoStream(fsCrypt,
-                AES.CreateDecryptor(),
-                CryptoStreamMode.Read);
+                while ((bytesRead = stream.Read(readBuffer, totalBytesRead, readBuffer.Length - totalBytesRead)) >
+                       0)
+                {
+                    totalBytesRead += bytesRead;
 
-            var fsOut = new MemoryStream();
+                    if (totalBytesRead == readBuffer.Length)
+                    {
+                        int nextByte = stream.ReadByte();
+                        if (nextByte != -1)
+                        {
+                            byte[] temp = new byte[readBuffer.Length * 2];
+                            Buffer.BlockCopy(readBuffer, 0, temp, 0, readBuffer.Length);
+                            Buffer.SetByte(temp, totalBytesRead, (byte)nextByte);
+                            readBuffer = temp;
+                            totalBytesRead++;
+                        }
+                    }
+                }
 
-            int data;
-            while ((data = cs.ReadByte()) != -1)
-                fsOut.WriteByte((byte)data);
-          
-            cs.Close();
-            fsCrypt.Close();
-            return fsOut;
+                byte[] buffer = readBuffer;
+                if (readBuffer.Length != totalBytesRead)
+                {
+                    buffer = new byte[totalBytesRead];
+                    Buffer.BlockCopy(readBuffer, 0, buffer, 0, totalBytesRead);
+                }
+
+                return buffer;
+            }
+            finally
+            {
+                if (stream.CanSeek)
+                {
+                    stream.Position = originalPosition;
+                }
+            }
         }
     }
+
 }

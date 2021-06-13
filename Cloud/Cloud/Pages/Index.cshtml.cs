@@ -51,44 +51,18 @@ namespace Cloud.Pages
             await _db.SaveChangesAsync();
         }
 
-        public async Task<IActionResult> OnGetDownload(string path,CancellationToken cs)
+        public async Task<IActionResult> OnGetDownload(string path)
         {
             var user = await User.GetUser();
-            var file = System.IO.File.Open(@$"{_env.ContentRootPath}/Data/{user.Id}/{path}", FileMode.Open,
-                FileAccess.Read, FileShare.ReadWrite);
-
-            var clientComponent = HttpContext.Request.Cookies["hash"];
-            var serverComponent = HttpContext.Session.GetString("ServerFileKeyComponent");
+            var clientComponent = this.HttpContext.Request.Cookies["ClientFileKeyComponent"];
+            var serverComponent = this.HttpContext.Session.GetString("ServerFileKeyComponent");
             var key = UserManager.Decrypt(user.FilePassword, UserManager.Decrypt(clientComponent, serverComponent));
-            byte[] saltBytes = new byte[] { 1, 2, 3, 4, 5, 6, 7, 8 };
-            FileStream fsCrypt = new FileStream(@$"{_env.ContentRootPath}/Data/{user.Id}/{path}", FileMode.Open);
+            var file = System.IO.File.Open(@$"{_env.ContentRootPath}/Data/{user.Id}/{path}", FileMode.Open,
+                FileAccess.Read);
+            var bytesToDec = Startup.ReadToEnd(file);
 
-            RijndaelManaged AES = new RijndaelManaged();
-
-            AES.KeySize = 256;
-            AES.BlockSize = 128;
-
-
-            var key1 = new Rfc2898DeriveBytes(Encoding.UTF8.GetBytes(key), saltBytes, 1000);
-            AES.Key = key1.GetBytes(AES.KeySize / 8);
-            AES.IV = key1.GetBytes(AES.BlockSize / 8);
-            AES.Padding = PaddingMode.Zeros;
-
-            AES.Mode = CipherMode.CBC;
-
-            using CryptoStream cs1 = new CryptoStream(fsCrypt,
-                AES.CreateDecryptor(),
-                CryptoStreamMode.Read);
-
-            var fsOut = new MemoryStream();
-                 fsOut.SetLength(fsCrypt.Length);
-            int data;
-            while ((data = cs1.ReadByte()) != -1)
-                fsOut.WriteByte((byte)data);
-
-           
-            return File(fsOut, "application/" + System.IO.Path.GetExtension(System.IO.Path.GetExtension(path)),
-                System.IO.Path.GetFileName(path));
+            return File(Crypto.DecryptByteArray(Encoding.UTF8.GetBytes(key),bytesToDec), "application/" + System.IO.Path.GetExtension(System.IO.Path.GetExtension(path)),
+                System.IO.Path.GetFileName(path)); 
         }
 
         public async Task<IActionResult> OnGetDeleteFile()
