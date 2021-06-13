@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
+using Cloud.Extensions;
 using Cloud.Models;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -38,19 +39,12 @@ namespace Cloud.Pages
                 if (user.IsAdmin) identity.AddClaim(new Claim(ClaimTypes.Role, "Admin"));
 
                 var principal = new ClaimsPrincipal(identity);
-                var authenticationProperties = new AuthenticationProperties
-                {
-                    ExpiresUtc = DateTimeOffset.Now.AddMinutes(5),
-                    IsPersistent = false,
-                }; 
                 await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
-                var hash = UserManager.Sha512(password);
-                var serverKeyComponent = UserManager.GenerateRandomPassword();
-                Debug.WriteLine("Client: " + hash);
-                Debug.WriteLine("Server: " + serverKeyComponent);
-                Debug.WriteLine("ENC: " + UserManager.Encrypt(hash, serverKeyComponent));
+                var hash = password.Sha512();
+                var serverKeyComponent = UserManager.GenerateRandomCryptoString();
+                
                 HttpContext.Session.SetString("ServerFileKeyComponent", serverKeyComponent);
-                HttpContext.Response.Cookies.Append("ClientFileKeyComponent", UserManager.Encrypt(hash,serverKeyComponent));
+                HttpContext.Response.Cookies.Append("ClientFileKeyComponent", hash.Encrypt(serverKeyComponent));
                 return RedirectToPage("/Index");
             }
 

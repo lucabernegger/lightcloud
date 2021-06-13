@@ -1,12 +1,11 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Cloud.Extensions;
 using Cloud.Models;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
@@ -127,11 +126,6 @@ namespace Cloud
                     }
                 }
             });
-            var db = new ApplicationDbContext();
-            var user = db.Users.Find(1);
-            user.FilePassword = UserManager.Encrypt("t6w9z$C&E)H@McQf",
-                UserManager.Sha512("123"));
-            db.SaveChanges();
         }
 
         private async Task FileUploadCompleted(ITusFile file, IWebHostEnvironment env, CancellationToken cs,
@@ -160,9 +154,9 @@ namespace Cloud
                 await using var db = new ApplicationDbContext();
                 db.Files.Add(f);
                 await db.SaveChangesAsync();
-                var k1 = UserManager.Decrypt(clientComponent, serverComponent);
-                var key = UserManager.Decrypt(user.FilePassword, k1);
-                var bytesToEnc = ReadToEnd(stream);
+                var k1 = clientComponent.Decrypt(serverComponent);
+                var key = user.FilePassword.Decrypt(k1);
+                var bytesToEnc = stream.ReadToEnd();
                
                 File.WriteAllBytes(filepath + "/" + meta["filename"].GetString(Encoding.UTF8), Crypto.EncryptByteArray(Encoding.UTF8.GetBytes(key),bytesToEnc));
 
@@ -171,59 +165,7 @@ namespace Cloud
             await stream.DisposeAsync();
         }
         
-        public static byte[] ReadToEnd(System.IO.Stream stream)
-        {
-            long originalPosition = 0;
-
-            if (stream.CanSeek)
-            {
-                originalPosition = stream.Position;
-                stream.Position = 0;
-            }
-
-            try
-            {
-                byte[] readBuffer = new byte[4096];
-
-                int totalBytesRead = 0;
-                int bytesRead;
-
-                while ((bytesRead = stream.Read(readBuffer, totalBytesRead, readBuffer.Length - totalBytesRead)) >
-                       0)
-                {
-                    totalBytesRead += bytesRead;
-
-                    if (totalBytesRead == readBuffer.Length)
-                    {
-                        int nextByte = stream.ReadByte();
-                        if (nextByte != -1)
-                        {
-                            byte[] temp = new byte[readBuffer.Length * 2];
-                            Buffer.BlockCopy(readBuffer, 0, temp, 0, readBuffer.Length);
-                            Buffer.SetByte(temp, totalBytesRead, (byte)nextByte);
-                            readBuffer = temp;
-                            totalBytesRead++;
-                        }
-                    }
-                }
-
-                byte[] buffer = readBuffer;
-                if (readBuffer.Length != totalBytesRead)
-                {
-                    buffer = new byte[totalBytesRead];
-                    Buffer.BlockCopy(readBuffer, 0, buffer, 0, totalBytesRead);
-                }
-
-                return buffer;
-            }
-            finally
-            {
-                if (stream.CanSeek)
-                {
-                    stream.Position = originalPosition;
-                }
-            }
-        }
+        
     }
 
 }

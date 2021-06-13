@@ -1,16 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Encodings.Web;
-using System.Text.Json;
-using System.Text.Json.Serialization;
-using System.Threading;
 using System.Threading.Tasks;
+using Cloud.Extensions;
 using Cloud.Models;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
@@ -56,10 +52,10 @@ namespace Cloud.Pages
             var user = await User.GetUser();
             var clientComponent = this.HttpContext.Request.Cookies["ClientFileKeyComponent"];
             var serverComponent = this.HttpContext.Session.GetString("ServerFileKeyComponent");
-            var key = UserManager.Decrypt(user.FilePassword, UserManager.Decrypt(clientComponent, serverComponent));
+            var key = user.FilePassword.Decrypt(clientComponent.Decrypt(serverComponent)) ;
             var file = System.IO.File.Open(@$"{_env.ContentRootPath}/Data/{user.Id}/{path}", FileMode.Open,
                 FileAccess.Read);
-            var bytesToDec = Startup.ReadToEnd(file);
+            var bytesToDec = file.ReadToEnd();
 
             return File(Crypto.DecryptByteArray(Encoding.UTF8.GetBytes(key),bytesToDec), "application/" + System.IO.Path.GetExtension(System.IO.Path.GetExtension(path)),
                 System.IO.Path.GetFileName(path)); 
