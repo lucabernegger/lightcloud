@@ -36,6 +36,7 @@ jobs:
         username: ${{ secrets.REMOTE_USER }}
         key: ${{ secrets.SSH_KEY }}
         rm: false
+        overwrite: true
         source: "deploy/*"
         target: "${{ secrets.REMOTE_DIR }}"
     - name: Restart cloud
