@@ -2,6 +2,7 @@ name: .NET
 
 on:
   release:
+    types: [published]
     branches: [ main ]
     
 jobs:
