@@ -1,11 +1,9 @@
 name: .NET
 
 on:
-  push:
+  release:
     branches: [ main ]
-  pull_request:
-    branches: [ main ]
-
+    
 jobs:
   build:
 
@@ -37,6 +35,6 @@ jobs:
         username: ${{ secrets.REMOTE_USER }}
         key: ${{ secrets.SSH_KEY }}
         rm: true
-        source: "deploy"
+        source: "deploy/*"
         target: "${{ secrets.REMOTE_DIR }}"
 
