@@ -13,6 +13,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+    - name: Step 1 - Create a temporary artifact downloads folder
+      run: mkdir deploy
     - name: Setup .NET
       uses: actions/setup-dotnet@v1
       with:
@@ -21,4 +23,11 @@ jobs:
       run: dotnet restore ./Cloud/Cloud.sln
     - name: Build
       run: dotnet build ./Cloud/Cloud.sln --no-restore
+    - name: Deploy
+      run: dotnet publish ./Cloud/Cloud.sln -r linux-arm --self-contained false -o deploy
+    - name: Step 3 - Use the Upload Artifact GitHub Action
+      uses: actions/upload-artifact@v2
+      with: 
+        name: assets-for-download
+        path: deploy
 
