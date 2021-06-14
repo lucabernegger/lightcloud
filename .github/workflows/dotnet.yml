@@ -35,7 +35,15 @@ jobs:
         host: ${{ secrets.REMOTE_HOST }}
         username: ${{ secrets.REMOTE_USER }}
         key: ${{ secrets.SSH_KEY }}
-        rm: true
+        rm: false
+        overwrite: true
         source: "deploy/*"
         target: "${{ secrets.REMOTE_DIR }}"
-
+    - name: Restart cloud
+      uses: fifsky/ssh-action@master
+      with:
+        command: |
+          sudo service cloud restart 
+        host: ${{ secrets.REMOTE_HOST }}
+        user: ${{ secrets.REMOTE_USER }}
+        key: ${{ secrets.SSH_KEY }}
