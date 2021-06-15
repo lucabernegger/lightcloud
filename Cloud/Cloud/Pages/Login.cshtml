@@ -26,14 +26,47 @@
         </div>
     </div>
 </div>
+<div class="modal fade" id="totpModal" tabindex="-1" aria-labelledby="totpModalLabel" style="display: none;" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <form method="post" asp-page-handler="CheckTotp">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="totpModalLabelModalLabel">2 Factor Authentication</h5>
+                    <button type="button" class="btn-close" data-mdb-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group mt-3 text-center">
+                        <label for="name">Enter your 2 Factor Authentication Code</label>
+                        <input type="number" class="form-control" id="name" name="totp" max="999999" autofocus="true"/>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-mdb-dismiss="modal">
+                        Close
+                    </button>
+                    <button type="submit" class="btn btn-primary">Login</button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
 @section Scripts
 {
     <script>
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.has('error')) {
-            toastr.error(urlParams.get('error'));
-            window.history.replaceState(null, null, window.location.pathname);
-            
-        }
+        $(window).on('load', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('error')) {
+                toastr.error(urlParams.get('error'));
+                window.history.replaceState(null, null, window.location.pathname);
+
+            }
+            if (urlParams.has('totp_req')) {
+                $("#totpModal").modal("show");
+                window.history.replaceState(null, null, window.location.pathname);
+
+            }
+        });
+        
     </script>
 }

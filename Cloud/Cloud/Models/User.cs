@@ -13,5 +13,7 @@ namespace Cloud.Models
         public long MaxFileBytes { get; set; }
         public DateTime LastLogin { get; set; }
         public bool ShowKnownFileExtensions { get; set; } = true;
+        public string TotpSecret { get; set; }
+        public bool TotpActive { get; set; }
     }
 }
