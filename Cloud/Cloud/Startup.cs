@@ -133,10 +133,12 @@ namespace Cloud
         private void CheckIfNewInstallation()
         {
             using var db = new ApplicationDbContext();
-            if(db.Database.GetPendingMigrations().Any()) 
-                db.Database.Migrate();
+            #if (!DEBUG)
+                   db.Database.Migrate();     
+            #endif
 
-             if (!db.Users.Any())
+
+            if (!db.Users.Any())
             {
                 var pw = UserManager.GenerateRandomPassword();
                 var hashed = UserManager.GenerateHashAndSalt(pw);
