@@ -27,7 +27,7 @@
         <tbody>
             @foreach (var user in _db.Users.ToList())
             {
-                var usedStorage = new DirectoryInfo(_env.ContentRootPath + "/Data/" + user.Id + "/").GetSizeOfDirectory();
+                var usedStorage = _db.Files.Where(o=>o.UserId == user.Id).ToList().Sum(o => o.Size);
                 <tr>
                     <td>@user.Id</td>
                     <td>@user.Name</td>

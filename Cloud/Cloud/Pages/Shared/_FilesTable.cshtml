@@ -18,9 +18,14 @@
         currentPath = System.IO.Path.Combine(_env.ContentRootPath, "Data", user.Id.ToString());
 
     }
+    if (currentPath.Last() != '/')
+    {
+        currentPath += '/';
+    }
     currentPath = currentPath.Replace(System.IO.Path.AltDirectorySeparatorChar, System.IO.Path.DirectorySeparatorChar);
     if (System.IO.File.Exists(currentPath))
         return;
+    Debug.WriteLine(currentPath);
 
 }
 
@@ -76,7 +81,7 @@
                 <td></td>
             </tr>
         }
-        @foreach (var file in _db.Files.Where(o => o.UserId == user.Id && o.Path == currentPath.Replace("/","\\")).AsParallel())
+        @foreach (var file in _db.Files.Where(o => o.UserId == user.Id && o.Path == currentPath).AsParallel())
         {
             var path = Cloud.FileMethods.GetRelativePath(System.IO.Path.Combine(_env.ContentRootPath , "Data" , user.Id.ToString()), System.IO.Path.Combine(file.Path,file.Filename));
             var isShared = FileMethods.IsFileShared(path, user.Id);
