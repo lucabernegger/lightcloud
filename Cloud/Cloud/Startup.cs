@@ -59,7 +59,18 @@ namespace Cloud
                 ".exe",
                 "https://raw.githubusercontent.com/microsoft/fluentui-system-icons/master/assets/Apps/SVG/ic_fluent_apps_28_regular.svg"
             },
-
+            {
+                ".pdf",
+                "https://raw.githubusercontent.com/microsoft/fluentui-system-icons/master/assets/Document%20PDF/SVG/ic_fluent_document_pdf_32_regular.svg"
+            }, 
+            {
+                ".csv",
+                "https://raw.githubusercontent.com/microsoft/fluentui-system-icons/master/assets/Table/SVG/ic_fluent_table_32_regular.svg"
+            },
+            {
+                ".xlsx",
+                "https://raw.githubusercontent.com/microsoft/fluentui-system-icons/master/assets/Table/SVG/ic_fluent_table_32_regular.svg"
+            }
         };
 
         // This method gets called by the runtime. Use this method to add services to the container.
