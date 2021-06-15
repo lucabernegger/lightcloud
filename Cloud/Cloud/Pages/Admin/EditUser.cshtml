@@ -4,6 +4,7 @@
 @inject ApplicationDbContext _db;
 @{
     var user = await UserManager.GetUserById(Model.Id);
+    ViewData["Title"] = "Admin - Edit User";
 }
 <style>
     input[type=checkbox] {

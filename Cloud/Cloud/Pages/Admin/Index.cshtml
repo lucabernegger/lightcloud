@@ -5,6 +5,10 @@
 @model Cloud.Pages.Admin.IndexModel
 @inject ApplicationDbContext _db;
 @inject IHostEnvironment _env;
+@{
+    ViewData["Title"] = "Admin";
+}
+
 <h3 class="text-center mt-3">Users</h3>
 <button type="button" class="btn btn-primary" data-mdb-toggle="modal" data-mdb-target="#addUserModal">
     <i class="fas fa-user-plus"></i> Add User
@@ -62,18 +66,18 @@
                 <div class="modal-body">
                     <div class="form-group mt-3">
                         <label for="name">Name</label>
-                        <input type="text" class="form-control" id="name" asp-for="Data.Name"/>
+                        <input type="text" class="form-control" id="name" asp-for="Data.Name" />
                         <label for="isAdmin">Admin</label>
                         <select class="form-control" id="isAdmin" asp-for="Data.Admin">
                             <option value="0">User</option>
                             <option value="1">Admin</option>
                         </select>
                     </div>
-                    <hr/>
+                    <hr />
 
                     <div class="form-group mt-3">
                         <label for="maxStorage">Max Storage (GB)</label>
-                        <input type="number" class="form-control" id="maxStorage" asp-for="Data.MaxStorage"/>
+                        <input type="number" class="form-control" id="maxStorage" asp-for="Data.MaxStorage" />
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -96,7 +100,7 @@
             window.history.replaceState(null, null, window.location.pathname);
             Swal.fire(
                 'User created',
-                "User created successfully!<br>Password:<input type='text' readonly class='form-control text-center' value='" + urlParams.get('addUser_success')+"'>",
+                "User created successfully!<br>Password:<input type='text' readonly class='form-control text-center' value='" + urlParams.get('addUser_success') + "'>",
                 'success'
             );
         }

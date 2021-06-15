@@ -2,7 +2,7 @@
 @model Cloud.Pages.UserSettingsModel
 @{
     var user = await User.GetUser();
-
+    ViewData["Title"] = "Settings";
 }
 <div class="card mt-3 text-white" style="background: #59606D">
     <div class="card-header">
