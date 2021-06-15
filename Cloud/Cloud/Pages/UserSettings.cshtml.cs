@@ -1,4 +1,6 @@
+using System;
 using System.Diagnostics;
+using System.Drawing;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
@@ -10,6 +12,8 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using OtpNet;
+using QRCoder;
 
 namespace Cloud.Pages
 {
@@ -24,6 +28,20 @@ namespace Cloud.Pages
         }
         [BindProperty] public SetPasswordData SetPasswordData { get; set; }
         [BindProperty] public SettingsData SettingsData { get; set; }
+        [BindProperty(SupportsGet = true)] public string TotpSecret { get; set; }
+
+        public void OnGet()
+        {
+            if (TotpSecret is not null)
+            {
+                QRCodeGenerator _qrCode = new QRCodeGenerator();
+                QRCodeData _qrCodeData = _qrCode.CreateQrCode("otpauth://totp/Lightcloud?secret=" + TotpSecret, QRCodeGenerator.ECCLevel.Q);
+                QRCode qrCode = new QRCode(_qrCodeData);
+                Bitmap qrCodeImage = qrCode.GetGraphic(20);
+                ViewData.Add("qr", Convert.ToBase64String(FileMethods.BitmapToBytesCode(qrCodeImage)));
+            }
+            
+        }
 
         public async Task<IActionResult> OnPostSetPassword()
         {
@@ -51,6 +69,29 @@ namespace Cloud.Pages
             user.ShowKnownFileExtensions = SettingsData.ShowFileExtensions;
             _db.Users.Update(user);
             await _db.SaveChangesAsync();
+            return Page();
+        }
+
+        public async Task<IActionResult> OnPostActivateTotp()
+        {
+            var user = await User.GetUser();
+            var secret = KeyGeneration.GenerateRandomKey(20);
+            var base32Secret = Base32Encoding.ToString(secret);
+            user.TotpActive = true;
+            user.TotpSecret = base32Secret;
+            _db.Users.Update(user);
+            await _db.SaveChangesAsync();
+
+            return Redirect("/UserSettings?TotpSecret=" + base32Secret);
+        }
+        public async Task<IActionResult> OnPostDisableTotp()
+        {
+            var user = await User.GetUser();
+            user.TotpActive = false;
+            user.TotpSecret = String.Empty;
+            _db.Users.Update(user);
+            await _db.SaveChangesAsync();
+
             return Page();
         }
     }
