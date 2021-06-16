@@ -48,11 +48,39 @@ namespace Cloud
                 "https://raw.githubusercontent.com/microsoft/fluentui-system-icons/master/assets/Folder%20Zip/SVG/ic_fluent_folder_zip_28_regular.svg"
             },
             {
+                ".tar.gz",
+                "https://raw.githubusercontent.com/microsoft/fluentui-system-icons/master/assets/Folder%20Zip/SVG/ic_fluent_folder_zip_28_regular.svg"
+            },
+            {
+                ".tar",
+                "https://raw.githubusercontent.com/microsoft/fluentui-system-icons/master/assets/Folder%20Zip/SVG/ic_fluent_folder_zip_28_regular.svg"
+            },
+            {
+                ".7zip",
+                "https://raw.githubusercontent.com/microsoft/fluentui-system-icons/master/assets/Folder%20Zip/SVG/ic_fluent_folder_zip_28_regular.svg"
+            },
+            {
                 ".png",
                 "https://raw.githubusercontent.com/microsoft/fluentui-system-icons/master/assets/Image/SVG/ic_fluent_image_28_regular.svg"
             },
             {
                 ".jpg",
+                "https://raw.githubusercontent.com/microsoft/fluentui-system-icons/master/assets/Image/SVG/ic_fluent_image_28_regular.svg"
+            },
+            {
+                ".jpeg",
+                "https://raw.githubusercontent.com/microsoft/fluentui-system-icons/master/assets/Image/SVG/ic_fluent_image_28_regular.svg"
+            },
+            {
+                ".bmp",
+                "https://raw.githubusercontent.com/microsoft/fluentui-system-icons/master/assets/Image/SVG/ic_fluent_image_28_regular.svg"
+            },
+            {
+                ".raw",
+                "https://raw.githubusercontent.com/microsoft/fluentui-system-icons/master/assets/Image/SVG/ic_fluent_image_28_regular.svg"
+            },
+            {
+                ".gif",
                 "https://raw.githubusercontent.com/microsoft/fluentui-system-icons/master/assets/Image/SVG/ic_fluent_image_28_regular.svg"
             },
             {
@@ -70,6 +98,10 @@ namespace Cloud
             {
                 ".xlsx",
                 "https://raw.githubusercontent.com/microsoft/fluentui-system-icons/master/assets/Table/SVG/ic_fluent_table_32_regular.svg"
+            },
+            {
+                ".txt",
+                "https://raw.githubusercontent.com/microsoft/fluentui-system-icons/master/assets/Document%20Bullet%20List/SVG/ic_fluent_document_bullet_list_24_regular.svg"
             }
         };
 

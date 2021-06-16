@@ -51,7 +51,7 @@
                 <td>
                     <span class="ficon">
                         <a asp-route-path="@path" class="ficon">
-                            <img src="https://raw.githubusercontent.com/microsoft/fluentui-system-icons/master/assets/Folder/SVG/ic_fluent_folder_28_regular.svg" />
+                            <img src="https://raw.githubusercontent.com/microsoft/fluentui-system-icons/master/assets/Folder/SVG/ic_fluent_folder_28_regular.svg" height="28" width="28"/>
                             @info.Name
                         </a>
                     </span>
@@ -94,12 +94,12 @@
                         <a asp-route-path="@path" asp-page-handler="Download" class="ficon">
                             @if (Startup.FileExtensionIcon.ContainsKey(extension))
                             {
-                                <img src="@Startup.FileExtensionIcon[extension]" />
+                                <img src="@Startup.FileExtensionIcon[extension]" height="28" width="28"/>
 
                             }
                             else
                             {
-                                <img src="https://raw.githubusercontent.com/microsoft/fluentui-system-icons/master/assets/Document/SVG/ic_fluent_document_28_regular.svg" />
+                                <img src="https://raw.githubusercontent.com/microsoft/fluentui-system-icons/master/assets/Document/SVG/ic_fluent_document_28_regular.svg" height="28" width="28"/>
 
                             }
 
