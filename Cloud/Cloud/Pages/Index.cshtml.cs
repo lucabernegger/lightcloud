@@ -7,6 +7,7 @@ using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Web;
 using Cloud.Extensions;
 using Cloud.Models;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -221,16 +222,27 @@ namespace Cloud.Pages
             return File(compressedBytes, "application/zip", $"{DateTime.Now.ToShortDateString()}.zip");
         }
 
-        public async Task<IActionResult> OnPostRenameFile(int id, string name)
+        public async Task<IActionResult> OnPostRenameFile(int id,string path, string name,bool isFile)
         {
-            var file = await _db.Files.FirstOrDefaultAsync(o => o.Id == id);
-            if (file is not null)
+            var user = await User.GetUser();
+            Debug.WriteLine(isFile);
+            if (isFile)
             {
-                file.Name = name;
-                await _db.SaveChangesAsync();
+                var file = await _db.Files.FirstOrDefaultAsync(o => o.Id == id);
+                if (file is not null)
+                {
+                    file.Name = name;
+                    await _db.SaveChangesAsync();
+                }
+            }
+            else
+            {
+                var dirinfo = new DirectoryInfo($"{_env.ContentRootPath}/Data/{user.Id}/{path}");
+                dirinfo.MoveTo($"{_env.ContentRootPath}/Data/{user.Id}/{name}");
             }
 
-            return Page();
+
+            return Redirect("/Index");
         }
 
         public async Task<IActionResult> OnGetDownloadFolder()

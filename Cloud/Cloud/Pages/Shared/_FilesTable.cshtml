@@ -3,6 +3,7 @@
 @using Cloud.Extensions
 @using Cloud.Models
 @using System.Diagnostics
+@using System.Text.Encodings.Web
 @inject ApplicationDbContext _db;
 @inject IWebHostEnvironment _env;
 @{
@@ -25,8 +26,6 @@
     currentPath = currentPath.Replace(System.IO.Path.AltDirectorySeparatorChar, System.IO.Path.DirectorySeparatorChar);
     if (System.IO.File.Exists(currentPath))
         return;
-    Debug.WriteLine(currentPath);
-
 }
 
 <table class="table table-hover table-responsive shadow" style="font-size: 1.2em" id="table">
@@ -68,8 +67,12 @@
                     <ul class="dropdown-menu dropdown-menu-end "
                         aria-labelledby="navbarDropdownMenuLink" style="background: #013a63 !important">
                         <li>
+                            <a class="dropdown-item text-white nohover" onclick="openRenameFileModal('@path','@info.Name',false)"><i class="far fa-edit text-secondary"></i> Rename</a>
+                        </li>
+                        <li>
                             <a class="dropdown-item text-white nohover" asp-page-handler="DownloadFolder" asp-route-path="@path"><i class="fas fa-cloud-download-alt text-secondary"></i> Download Folder</a>
                         </li>
+
                         <li>
                             <a class="dropdown-item text-white nohover" asp-page-handler="DeleteFolder" asp-route-path="@path" asp-route-fileName="@info.Name"><i class="fas fa-trash text-danger"></i> Delete</a>
                         </li>
@@ -120,7 +123,7 @@
                     <ul class="dropdown-menu dropdown-menu-end "
                         aria-labelledby="navbarDropdownMenuLink" style="background: #013a63 !important">
                         <li>
-                            <a class="dropdown-item text-white nohover" onclick="openRenameFileModal(@file.Id,'@file.Name')"><i class="far fa-edit text-secondary"></i> Rename</a>
+                            <a class="dropdown-item text-white nohover" onclick="openRenameFileModal(@file.Id,'@file.Name',true)"><i class="far fa-edit text-secondary"></i> Rename</a>
                         </li>
                         <li>
                             <a class="dropdown-item text-white nohover" asp-page-handler="DeleteFile" asp-route-path="@path" asp-route-fileName="@file.Name"><i class="fas fa-trash text-danger"></i> Delete</a>

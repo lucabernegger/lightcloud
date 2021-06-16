@@ -118,7 +118,9 @@
                     <button type="button" class="btn-close" data-mdb-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <input type="hidden" name="id" id="renameFileId" />
+                    <input type="hidden" name="id" id="renameFileId"/>
+                    <input type="hidden" name="isFile" id="isFile" />
+                    <input type="hidden" name="path" id="renameFilepath" />
                     <label for="renameName">Rename to</label>
                     <input type="text" name="name" class="form-control" id="renameName" required />
                 </div>
@@ -246,9 +248,12 @@
             const parts = value.split(`; ${name}=`);
             if (parts.length === 2) return parts.pop().split(';').shift();
         }
-        function openRenameFileModal(id,name) {
+        function openRenameFileModal(id, name, isFile) {
+
             $("#renameFileId").val(id);
+            $("#renameFilepath").val(id);
             $("#renameName").val(name);
+            $("#isFile").val(isFile);
             $("#renameFileModal").modal("show");
         }
         loadFiles();
