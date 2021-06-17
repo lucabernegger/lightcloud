@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Drawing;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -49,7 +50,7 @@ namespace Cloud.Pages
             await _db.SaveChangesAsync();
         }
 
-        public async Task<IActionResult> OnGetDownload(string path)
+        public async Task<IActionResult> OnGetDownload(string path, bool forceDownload = false)
         {
             var user = await User.GetUser();
             var clientComponent = this.HttpContext.Request.Cookies["ClientFileKeyComponent"];
@@ -64,17 +65,41 @@ namespace Cloud.Pages
             serverComponent = null;
             await file.DisposeAsync();
             GC.Collect();
-            return File(bytes, "application/" + System.IO.Path.GetExtension(System.IO.Path.GetExtension(path)),
+            var fileExtension = System.IO.Path.GetExtension(path);
+            if (!forceDownload && Startup.TextPreviewFileExtensions.Contains(fileExtension))
+            {
+                var id = new Random().Next(10000);
+                Startup.PreviewCache.Add(id,Encoding.Default.GetString(bytes));
+                return Redirect($"/Index?preview={id}&preview_type=text");
+            }
+            if (!forceDownload && System.IO.Path.GetExtension(path) == ".json")
+            {
+                var id = new Random().Next(10000);
+                Startup.PreviewCache.Add(id, Encoding.Default.GetString(bytes));
+                return Redirect($"/Index?preview={id}&preview_type=json");
+            }   
+            if (!forceDownload && Startup.ImagePreviewFileExtensions.Contains(fileExtension))
+            {
+                var id = new Random().Next(10000);
+                string base64String = Convert.ToBase64String(bytes);
+                Startup.PreviewCache.Add(id, $"data:image/{fileExtension.Remove(0, 1)};base64,{base64String}");
+                return Redirect($"/Index?preview={id}&preview_type=image");
+
+            }
+            return File(bytes, "application/" + fileExtension,
                 System.IO.Path.GetFileName(path));
         }
 
         public async Task<IActionResult> OnGetDeleteFile()
         {
             var user = await User.GetUser();
-            var targetFileName = $"{_env.ContentRootPath}/Data/{user.Id}/{Path}";
+            var targetFileName = $"{_env.ContentRootPath}\\Data\\{user.Id}\\{Path}";
             foreach (var file in _db.Files.Where(o => o.UserId == user.Id))
             {
                 var f = file.Path + file.Filename;
+                Debug.WriteLine(targetFileName);
+                Debug.WriteLine(f);
+                Debug.WriteLine("---------------------");
                 if (f == targetFileName)
                 {
                     _db.Remove(file);

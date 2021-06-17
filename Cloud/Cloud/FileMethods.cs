@@ -5,6 +5,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Encodings.Web;
+using System.Text.Json;
 using Cloud.Extensions;
 using Cloud.Migrations;
 using Cloud.Models;
@@ -14,6 +15,17 @@ namespace Cloud
 {
     public static class FileMethods
     {
+        public static string PrettyJson(string unPrettyJson)
+        {
+            var options = new JsonSerializerOptions()
+            {
+                WriteIndented = true
+            };
+
+            var jsonElement = JsonSerializer.Deserialize<JsonElement>(unPrettyJson);
+
+            return JsonSerializer.Serialize(jsonElement, options);
+        }
         public static string BytesToString(long byteCount)
         {
             string[] suf = {"B", "KB", "MB", "GB", "TB", "PB", "EB"}; //Longs run out around EB

@@ -14,7 +14,7 @@
         await HttpContext.SignOutAsync();
         HttpContext.Response.Redirect("/Login");
         return;
-        
+
     }
     ViewData["Title"] = "Dashboard";
 }
@@ -24,6 +24,23 @@
         align-items: center;
         display: flex;
     }
+    textarea.textarea-autosize {
+        height: 2.25rem;
+        min-height: 2.25rem;
+        resize: none;
+        overflow-y:hidden;
+    }
+
+    textarea.textarea-autosize.form-control-lg {
+        height: 3.75rem;
+        min-height: 3.75rem;
+    }
+
+    textarea.textarea-autosize.form-control-sm {
+        height: 2rem;
+        min-height: 2rem;
+    }
+
 </style>
 <h3 class="mt-3">Files</h3>
 <button type="button" class="btn btn-sm btn-primary" data-mdb-toggle="modal" data-mdb-target="#fileUploadModal">
@@ -32,6 +49,7 @@
 <button type="button" class="btn btn-sm btn-primary" data-mdb-toggle="modal" data-mdb-target="#newFolderModal">
     New Folder
 </button>
+
 <div id="markbuttons" style="opacity: 0" class="form-row align-items-center">
     <form method="post" asp-page-handler="DownloadMarked" class="d-inline-flex mt-2">
         <input type="hidden" name="markedJson" class="markedJson" />
@@ -72,7 +90,7 @@
                 <div class="modal-body">
                     <input type="hidden" name="path" id="shareFile" />
                     <label for="shareExpiry">Expires</label>
-                    <input type="date" name="expiryDate" class="form-control" id="shareExpiry"  required/>
+                    <input type="date" name="expiryDate" class="form-control" id="shareExpiry" required />
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-mdb-dismiss="modal">
@@ -118,7 +136,7 @@
                     <button type="button" class="btn-close" data-mdb-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <input type="hidden" name="id" id="renameFileId"/>
+                    <input type="hidden" name="id" id="renameFileId" />
                     <input type="hidden" name="isFile" id="isFile" />
                     <input type="hidden" name="path" id="renameFilepath" />
                     <label for="renameName">Rename to</label>
@@ -135,9 +153,31 @@
         </div>
     </div>
 </div>
+
+<div class="modal fade" id="previewFileModal" tabindex="-1" aria-labelledby="previewFileModalLabel" style="display: none;" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <form method="post" asp-page-handler="RenameFile">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="previewFileModalLabel">Preview File</h5>
+                    <button type="button" class="btn-close" data-mdb-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body h-100" id="previewFileModalBody">
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-mdb-dismiss="modal">
+                        Close
+                    </button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
 @section Scripts
 {
-    
+
     <link href="https://releases.transloadit.com/uppy/v1.29.1/uppy.min.css" rel="stylesheet">
 
     <script src="https://releases.transloadit.com/uppy/v1.29.1/uppy.min.js"></script>
@@ -155,6 +195,26 @@
                 a,
                 'success'
             );
+        }
+        if (urlParams.has('preview') && urlParams.has('preview_type')) {
+            const content = $("#previewFileModalBody");
+            $.get(`/Files/Preview?id=${urlParams.get('preview')}`,
+                (data) => {
+                    if (urlParams.get('preview_type') === "text") {
+                        content.html(`<div class="form-control">${data}</div>`);
+                        $("#previewFileModal").modal("show");
+                    }
+                    if (urlParams.get('preview_type') === "json") {
+                        var obj = JSON.parse(data);
+                        var pretty = JSON.stringify(obj, undefined, 4);
+                        content.html(`<textarea class="form-control" readonly rows=20>${pretty}</textarea>`);
+                        $("#previewFileModal").modal("show");
+                    }
+                    if (urlParams.get('preview_type') === "image") {
+                        content.html(`<img class="img-fluid" src=${data} />`);
+                        $("#previewFileModal").modal("show");
+                    }
+                });
         }
         window.history.replaceState(null, null, window.location.pathname);
         var uppy = Uppy.Core()
@@ -191,10 +251,11 @@
                     });
             });
         var checkedItems = [];
+
         function loadFiles() {
             $.get("/Index", { handler: "FilesPartial", path: "@Model.Path" }).done(function(data) {
                 $('#files_table').html(data)
-                $(".marker-checkbox").change(function () {
+                $(".marker-checkbox").change(function() {
                     if (this.checked) {
                         checkedItems.push($(this).parent().attr("data-id"));
                     } else {
@@ -208,7 +269,7 @@
                         $("#markbuttons button").removeAttr('disabled');
                     } else {
                         $("#markbuttons").css("opacity", "0");
-                        $("#markbuttons button").attr('disabled',true);
+                        $("#markbuttons button").attr('disabled', true);
 
                     }
                     $(".markedJson").val(JSON.stringify(checkedItems));
@@ -219,13 +280,13 @@
                         $("#markbuttons button").removeAttr('disabled');
 
                     } else {
-                        $("#markbuttons button").attr('disabled',true);
+                        $("#markbuttons button").attr('disabled', true);
                     }
 
                 })
             });
         }
-        
+
         function showShareModal(file) {
             $("#shareFile").val(file);
             $("#shareFileModal").modal("show");
@@ -243,11 +304,13 @@
             document.body.removeChild(el);
             toastr.success("Copied link to clipboard");
         }
+
         function getCookie(name) {
             const value = `; ${document.cookie}`;
             const parts = value.split(`; ${name}=`);
             if (parts.length === 2) return parts.pop().split(';').shift();
         }
+
         function openRenameFileModal(id, name, isFile) {
 
             $("#renameFileId").val(id);
@@ -256,7 +319,15 @@
             $("#isFile").val(isFile);
             $("#renameFileModal").modal("show");
         }
+
+        function prettyPrint(output, json) {
+            var obj = JSON.parse(json);
+            var pretty = JSON.stringify(obj, undefined, 4);
+            output.value = pretty;
+        }
+
         loadFiles();
-        
+
+// Initialize Textarea
     </script>
 }
