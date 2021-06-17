@@ -207,8 +207,11 @@
                     if (urlParams.get('preview_type') === "json") {
                         var obj = JSON.parse(data);
                         var pretty = JSON.stringify(obj, undefined, 4);
-                        console.log(pretty)
                         content.html(`<textarea class="form-control" readonly rows=20>${pretty}</textarea>`);
+                        $("#previewFileModal").modal("show");
+                    }
+                    if (urlParams.get('preview_type') === "image") {
+                        content.html(`<img class="img-fluid" src=${data} />`);
                         $("#previewFileModal").modal("show");
                     }
                 });

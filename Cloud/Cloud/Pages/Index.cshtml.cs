@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Drawing;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -64,21 +65,28 @@ namespace Cloud.Pages
             serverComponent = null;
             await file.DisposeAsync();
             GC.Collect();
-            if(!forceDownload && System.IO.Path.GetExtension(System.IO.Path.GetExtension(path)) == ".txt")
+            var fileExtension = System.IO.Path.GetExtension(path);
+            if (!forceDownload && Startup.TextPreviewFileExtensions.Contains(fileExtension))
             {
                 var id = new Random().Next(10000);
                 Startup.PreviewCache.Add(id,Encoding.Default.GetString(bytes));
-                Debug.WriteLine(Encoding.Default.GetString(bytes));
                 return Redirect($"/Index?preview={id}&preview_type=text");
             }
-            if (!forceDownload && System.IO.Path.GetExtension(System.IO.Path.GetExtension(path)) == ".json")
+            if (!forceDownload && System.IO.Path.GetExtension(path) == ".json")
             {
                 var id = new Random().Next(10000);
                 Startup.PreviewCache.Add(id, Encoding.Default.GetString(bytes));
-                Debug.WriteLine(Encoding.Default.GetString(bytes));
                 return Redirect($"/Index?preview={id}&preview_type=json");
+            }   
+            if (!forceDownload && Startup.ImagePreviewFileExtensions.Contains(fileExtension))
+            {
+                var id = new Random().Next(10000);
+                string base64String = Convert.ToBase64String(bytes);
+                Startup.PreviewCache.Add(id, $"data:image/{fileExtension.Remove(0, 1)};base64,{base64String}");
+                return Redirect($"/Index?preview={id}&preview_type=image");
+
             }
-            return File(bytes, "application/" + System.IO.Path.GetExtension(System.IO.Path.GetExtension(path)),
+            return File(bytes, "application/" + fileExtension,
                 System.IO.Path.GetFileName(path));
         }
 

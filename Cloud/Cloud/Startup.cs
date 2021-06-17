@@ -105,6 +105,9 @@ namespace Cloud
             }
         };
 
+        public static string[] TextPreviewFileExtensions = {".txt"};
+        public static string[] ImagePreviewFileExtensions = {".png",".jpg",".jpeg",".gif",".bmp"};
+
         public static Dictionary<int, string> PreviewCache = new();
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
