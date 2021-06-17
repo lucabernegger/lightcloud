@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System;
+using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -28,6 +29,18 @@ namespace Cloud.Controllers
             var user = await User.GetUser();
             return _db.Files.Where(o => o.UserId == user.Id && o.Path == path).AsEnumerable();
         }
+        [HttpGet("Preview")]
+        public string GetPreview(int id)
+        {
+            if (Startup.PreviewCache.ContainsKey(id))
+            {
+                var prev = Startup.PreviewCache[id];
+                Startup.PreviewCache.Remove(id);
+                return prev;
+            }
 
+            return String.Empty;
+
+        }
     }
 }

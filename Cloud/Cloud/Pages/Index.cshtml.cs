@@ -49,7 +49,7 @@ namespace Cloud.Pages
             await _db.SaveChangesAsync();
         }
 
-        public async Task<IActionResult> OnGetDownload(string path)
+        public async Task<IActionResult> OnGetDownload(string path, bool forceDownload = false)
         {
             var user = await User.GetUser();
             var clientComponent = this.HttpContext.Request.Cookies["ClientFileKeyComponent"];
@@ -64,6 +64,20 @@ namespace Cloud.Pages
             serverComponent = null;
             await file.DisposeAsync();
             GC.Collect();
+            if(!forceDownload && System.IO.Path.GetExtension(System.IO.Path.GetExtension(path)) == ".txt")
+            {
+                var id = new Random().Next(10000);
+                Startup.PreviewCache.Add(id,Encoding.Default.GetString(bytes));
+                Debug.WriteLine(Encoding.Default.GetString(bytes));
+                return Redirect($"/Index?preview={id}&preview_type=text");
+            }
+            if (!forceDownload && System.IO.Path.GetExtension(System.IO.Path.GetExtension(path)) == ".json")
+            {
+                var id = new Random().Next(10000);
+                Startup.PreviewCache.Add(id, Encoding.Default.GetString(bytes));
+                Debug.WriteLine(Encoding.Default.GetString(bytes));
+                return Redirect($"/Index?preview={id}&preview_type=json");
+            }
             return File(bytes, "application/" + System.IO.Path.GetExtension(System.IO.Path.GetExtension(path)),
                 System.IO.Path.GetFileName(path));
         }
@@ -71,10 +85,13 @@ namespace Cloud.Pages
         public async Task<IActionResult> OnGetDeleteFile()
         {
             var user = await User.GetUser();
-            var targetFileName = $"{_env.ContentRootPath}/Data/{user.Id}/{Path}";
+            var targetFileName = $"{_env.ContentRootPath}\\Data\\{user.Id}\\{Path}";
             foreach (var file in _db.Files.Where(o => o.UserId == user.Id))
             {
                 var f = file.Path + file.Filename;
+                Debug.WriteLine(targetFileName);
+                Debug.WriteLine(f);
+                Debug.WriteLine("---------------------");
                 if (f == targetFileName)
                 {
                     _db.Remove(file);
