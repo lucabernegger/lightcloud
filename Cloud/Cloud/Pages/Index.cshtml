@@ -18,29 +18,31 @@
     }
     ViewData["Title"] = "Dashboard";
 }
-
+<link rel="stylesheet"
+      href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.0.1/styles/default.min.css">
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.0.1/highlight.min.js"></script>
 <style>
     .ficon {
         align-items: center;
         display: flex;
     }
+
     textarea.textarea-autosize {
         height: 2.25rem;
         min-height: 2.25rem;
         resize: none;
-        overflow-y:hidden;
+        overflow-y: hidden;
     }
 
-    textarea.textarea-autosize.form-control-lg {
-        height: 3.75rem;
-        min-height: 3.75rem;
-    }
+        textarea.textarea-autosize.form-control-lg {
+            height: 3.75rem;
+            min-height: 3.75rem;
+        }
 
-    textarea.textarea-autosize.form-control-sm {
-        height: 2rem;
-        min-height: 2rem;
-    }
-
+        textarea.textarea-autosize.form-control-sm {
+            height: 2rem;
+            min-height: 2rem;
+        }
 </style>
 <h3 class="mt-3">Files</h3>
 <button type="button" class="btn btn-sm btn-primary" data-mdb-toggle="modal" data-mdb-target="#fileUploadModal">
@@ -162,7 +164,7 @@
                     <h5 class="modal-title" id="previewFileModalLabel">Preview File</h5>
                     <button type="button" class="btn-close" data-mdb-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body" id="previewFileModalBody" style="overflow-y: scroll; max-height:80vh">
+                <div class="modal-body" id="previewFileModalBody" style="overflow-y: scroll; max-height: 80vh;">
 
                 </div>
                 <div class="modal-footer">
@@ -212,6 +214,10 @@
                     }
                     if (urlParams.get('preview_type') === "image") {
                         content.html(`<img class="img-fluid" src=${data} />`);
+                        $("#previewFileModal").modal("show");
+                    } if (urlParams.get('preview_type') === "code") {
+                        content.html(`<pre><code>${data}</div></pre>`);
+                        hljs.highlightAll();
                         $("#previewFileModal").modal("show");
                     }
                 });

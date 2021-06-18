@@ -72,19 +72,24 @@ namespace Cloud.Pages
                 Startup.PreviewCache.Add(id,Encoding.Default.GetString(bytes));
                 return Redirect($"/Index?preview={id}&preview_type=text");
             }
-            if (!forceDownload && System.IO.Path.GetExtension(path) == ".json")
+            if (!forceDownload && fileExtension == ".json")
             {
                 var id = new Random().Next(10000);
                 Startup.PreviewCache.Add(id, Encoding.Default.GetString(bytes));
                 return Redirect($"/Index?preview={id}&preview_type=json");
-            }   
+            }
             if (!forceDownload && Startup.ImagePreviewFileExtensions.Contains(fileExtension))
             {
                 var id = new Random().Next(10000);
                 string base64String = Convert.ToBase64String(bytes);
                 Startup.PreviewCache.Add(id, $"data:image/{fileExtension.Remove(0, 1)};base64,{base64String}");
                 return Redirect($"/Index?preview={id}&preview_type=image");
-
+            }
+            if (!forceDownload && Startup.CodePreviewFileExtensions.Contains(fileExtension))
+            {
+                var id = new Random().Next(10000);
+                Startup.PreviewCache.Add(id, Encoding.Default.GetString(bytes));
+                return Redirect($"/Index?preview={id}&preview_type=code");
             }
             return File(bytes, "application/" + fileExtension,
                 System.IO.Path.GetFileName(path));
@@ -97,9 +102,6 @@ namespace Cloud.Pages
             foreach (var file in _db.Files.Where(o => o.UserId == user.Id))
             {
                 var f = file.Path + file.Filename;
-                Debug.WriteLine(targetFileName);
-                Debug.WriteLine(f);
-                Debug.WriteLine("---------------------");
                 if (f == targetFileName)
                 {
                     _db.Remove(file);
@@ -108,12 +110,11 @@ namespace Cloud.Pages
                     {
                         _db.Shares.Remove(dbfile);
                         System.IO.File.Delete(@$"{_env.ContentRootPath}/Data/{dbfile.File}.share");
-                        await _db.SaveChangesAsync();
                     }
                 }
 
             }
-            _db.SaveChanges();
+            await _db.SaveChangesAsync();
 
             System.IO.File.Delete(targetFileName);
             return Redirect("/Index");
@@ -151,7 +152,7 @@ namespace Cloud.Pages
                     Key = sKey.Encrypt(key)
                 };
                 _db.Shares.Add(share);
-                await _db.SaveChangesAsync();
+                await _db.SaveChangesAsync(cs);
                 key = null;
                 clientComponent = null;
                 serverComponent = null;
@@ -201,7 +202,6 @@ namespace Cloud.Pages
                 {
                     _db.Shares.Remove(dbshare);
                     System.IO.File.Delete(@$"{_env.ContentRootPath}/Data/{dbshare.File}.share");
-                    await _db.SaveChangesAsync();
                 }
                 _db.Remove(dbfile);
                 System.IO.File.Delete(targetFileName);
