@@ -162,7 +162,7 @@
                     <h5 class="modal-title" id="previewFileModalLabel">Preview File</h5>
                     <button type="button" class="btn-close" data-mdb-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body h-100" id="previewFileModalBody">
+                <div class="modal-body" id="previewFileModalBody" style="overflow-y: scroll; max-height:80vh">
 
                 </div>
                 <div class="modal-footer">
@@ -201,7 +201,7 @@
             $.get(`/Files/Preview?id=${urlParams.get('preview')}`,
                 (data) => {
                     if (urlParams.get('preview_type') === "text") {
-                        content.html(`<div class="form-control">${data}</div>`);
+                        content.html(`<div class="form-control"  >${data}</div>`);
                         $("#previewFileModal").modal("show");
                     }
                     if (urlParams.get('preview_type') === "json") {
