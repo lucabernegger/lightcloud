@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Cloud.Extensions;
 using Cloud.Models;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -17,6 +18,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.IdentityModel.Tokens;
 using tusdotnet;
 using tusdotnet.Interfaces;
 using tusdotnet.Models;
@@ -104,7 +106,14 @@ namespace Cloud
                 "https://raw.githubusercontent.com/microsoft/fluentui-system-icons/master/assets/Document%20Bullet%20List/SVG/ic_fluent_document_bullet_list_24_regular.svg"
             }
         };
-
+         public static JwtTokenConfig TokenConfig = new JwtTokenConfig()
+         {
+             AccessTokenExpiration = 20,
+             Audience = Settings.BaseDomain,
+             Issuer = Settings.BaseDomain,
+             RefreshTokenExpiration = 60,
+             Secret = "asufhuzasbjhcbazutgsdoamskldnauig"
+         };
         public static string[] TextPreviewFileExtensions = {".txt"};
         public static string[] ImagePreviewFileExtensions = {".png",".jpg",".jpeg",".gif",".bmp"};
         public static string[] CodePreviewFileExtensions = { ".sh", ".css", ".less", ".c",".h",".vb",".java",".lua",".php",".py",".yaml",".go",".scss",".sql",".ts" };
@@ -123,9 +132,28 @@ namespace Cloud
             {
                 options.IdleTimeout = TimeSpan.FromMinutes(5);
             });
-            services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(options =>
+            services.AddAuthentication(o =>
+            {
+                o.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                o.DefaultChallengeScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+            }).AddCookie(options =>
             {
                 options.LoginPath = new PathString("/Login");
+            }).AddJwtBearer(JwtBearerDefaults.AuthenticationScheme,x =>
+            {
+                x.RequireHttpsMetadata = true;
+                x.SaveToken = true;
+                x.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidIssuer = TokenConfig.Issuer,
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(TokenConfig.Secret)),
+                    ValidAudience = TokenConfig.Audience,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ClockSkew = TimeSpan.FromMinutes(1)
+                };
             });
             
 
