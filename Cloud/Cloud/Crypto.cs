@@ -5,6 +5,23 @@ namespace Cloud
 {
     public class Crypto
     {
+        public static string GenerateRandomString(int length, string allowableChars = null)
+        {
+            if (string.IsNullOrEmpty(allowableChars))
+                allowableChars = @"ABCDEFGHIJKLMNOPQRSTUVWXYZ123456789abcdefghijklmnopqrstuvwxyz";
+
+            var rnd = new byte[length];
+            using (var rng = new RNGCryptoServiceProvider())
+                rng.GetBytes(rnd);
+
+            var allowable = allowableChars.ToCharArray();
+            var l = allowable.Length;
+            var chars = new char[length];
+            for (var i = 0; i < length; i++)
+                chars[i] = allowable[rnd[i] % l];
+
+            return new string(chars);
+        }
         public static byte[] EncryptByteArray(byte[] key, byte[] secret)
         {
             using (MemoryStream ms = new MemoryStream())

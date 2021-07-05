@@ -27,8 +27,7 @@ namespace Cloud
     public class RefreshToken
     {
         [JsonPropertyName("username")]
-        public string UserName { get; set; }    // can be used for usage tracking
-        // can optionally include other metadata, such as user agent, ip address, device name, and so on
+        public string UserName { get; set; }  
 
         [JsonPropertyName("tokenString")]
         public string TokenString { get; set; }
@@ -59,7 +58,6 @@ namespace Cloud
             _secret = Encoding.ASCII.GetBytes(jwtTokenConfig.Secret);
         }
 
-        // optional: clean up expired refresh tokens
         public void RemoveExpiredRefreshTokens(DateTime now)
         {
             var expiredTokens = _usersRefreshTokens.Where(x => x.Value.ExpireAt < now).ToList();

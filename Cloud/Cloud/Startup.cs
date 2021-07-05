@@ -112,7 +112,7 @@ namespace Cloud
              Audience = Settings.BaseDomain,
              Issuer = Settings.BaseDomain,
              RefreshTokenExpiration = 60,
-             Secret = "asufhuzasbjhcbazutgsdoamskldnauig"
+             Secret = Crypto.GenerateRandomString(32)
          };
         public static string[] TextPreviewFileExtensions = {".txt"};
         public static string[] ImagePreviewFileExtensions = {".png",".jpg",".jpeg",".gif",".bmp"};
