@@ -29,7 +29,6 @@ namespace Cloud.Controllers
         public async Task<List<DbFile>> GetFiles(string path)
         {
             var user = await User.GetUser();
-            Debug.WriteLine("UID: " + user.Id);
             return _db.Files.Where(o => o.UserId == user.Id && o.Path == path).ToList();
         }
         [HttpGet("Preview")]

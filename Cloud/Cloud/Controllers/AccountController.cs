@@ -27,7 +27,7 @@ namespace Cloud.Controllers
         }
 
         [AllowAnonymous]
-        [HttpGet("get-token")]
+        [HttpPost("get-token")]
         public ActionResult Login([FromQuery] LoginRequest request)
         {
             /*if (!ModelState.IsValid)
@@ -45,6 +45,7 @@ namespace Cloud.Controllers
             {
                 new Claim(ClaimTypes.NameIdentifier,user.Id.ToString()),
                 new Claim(ClaimTypes.Role,user.IsAdmin ? "Admin" : String.Empty),
+                new Claim(ClaimTypes.Name,user.Name)
             };
 
             var jwtResult = _jwtAuthManager.GenerateTokens(request.UserName, claims, DateTime.Now);
@@ -57,7 +58,7 @@ namespace Cloud.Controllers
                 RefreshToken = jwtResult.RefreshToken.TokenString
             });
         }
-        [HttpGet("refresh-token")]
+        [HttpPost("refresh-token")]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<ActionResult> RefreshToken([FromQuery] RefreshTokenRequest request)
         {
@@ -87,7 +88,14 @@ namespace Cloud.Controllers
                 return Unauthorized(e.Message); // return 401 so that the client side can redirect the user to login page
             }
         }
+        [HttpPost("/disable-token")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
 
+        public void DisableToken()
+        {
+            HttpContext.Session.Remove("ServerFileKeyComponent");
+            _jwtAuthManager.RemoveRefreshTokenByUserName(this.User.FindFirstValue(ClaimTypes.Name));
+        }
 
         [HttpGet("/Logout")]
         public async Task<IActionResult> Logout()
@@ -101,41 +109,32 @@ namespace Cloud.Controllers
     public class LoginRequest
     {
         [Required]
-        [JsonPropertyName("username")]
         public string UserName { get; set; }
 
         [Required]
-        [JsonPropertyName("password")]
         public string Password { get; set; }
     }
 
     public class LoginResult
     {
-        [JsonPropertyName("username")]
         public string UserName { get; set; }
 
-        [JsonPropertyName("role")]
         public string Role { get; set; }
 
-        [JsonPropertyName("originalUserName")]
         public string OriginalUserName { get; set; }
 
-        [JsonPropertyName("accessToken")]
         public string AccessToken { get; set; }
 
-        [JsonPropertyName("refreshToken")]
         public string RefreshToken { get; set; }
     }
 
     public class RefreshTokenRequest
     {
-        [JsonPropertyName("refreshToken")]
         public string RefreshToken { get; set; }
     }
 
     public class ImpersonationRequest
     {
-        [JsonPropertyName("username")]
         public string UserName { get; set; }
     }
 }
