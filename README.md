@@ -1,5 +1,5 @@
 # LightCloud
-A ASP.NET Core based Cloud Application.
+ASP.NET Core based Cloud Application.
 ## Features
 * Resumable Uploads (tus protocol)
 * All files are encrypted with AES256
