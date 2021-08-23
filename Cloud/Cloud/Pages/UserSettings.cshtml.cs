@@ -1,11 +1,6 @@
 using System;
-using System.Diagnostics;
-using System.Drawing;
-using System.Linq;
-using System.Security.Cryptography;
 using System.Threading.Tasks;
 using Cloud.Extensions;
-using Cloud.Migrations;
 using Cloud.Models;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -26,6 +21,7 @@ namespace Cloud.Pages
         {
             _db = db;
         }
+
         [BindProperty] public SetPasswordData SetPasswordData { get; set; }
         [BindProperty] public SettingsData SettingsData { get; set; }
         [BindProperty(SupportsGet = true)] public string TotpSecret { get; set; }
@@ -35,12 +31,12 @@ namespace Cloud.Pages
             if (TotpSecret is not null)
             {
                 var qrGen = new QRCodeGenerator();
-                var qrCodeData = qrGen.CreateQrCode("otpauth://totp/Lightcloud?secret=" + TotpSecret, QRCodeGenerator.ECCLevel.Q);
+                var qrCodeData = qrGen.CreateQrCode("otpauth://totp/Lightcloud?secret=" + TotpSecret,
+                    QRCodeGenerator.ECCLevel.Q);
                 var qrCode = new QRCode(qrCodeData);
                 var qrCodeImage = qrCode.GetGraphic(20);
                 ViewData.Add("qr", Convert.ToBase64String(FileMethods.BitmapToBytesCode(qrCodeImage)));
             }
-            
         }
 
         public async Task<IActionResult> OnPostSetPassword()
@@ -49,7 +45,6 @@ namespace Cloud.Pages
             if (UserManager.IsValid(user.Name, SetPasswordData.OldPassword) &&
                 SetPasswordData.NewPassword.Equals(SetPasswordData.NewPasswordRepeat))
             {
-              
                 var hashedPassword = UserManager.GenerateHashAndSalt(SetPasswordData.NewPassword);
                 user.Password = hashedPassword[0];
                 user.Salt = hashedPassword[1];
@@ -84,11 +79,12 @@ namespace Cloud.Pages
 
             return Redirect("/UserSettings?TotpSecret=" + base32Secret);
         }
+
         public async Task<IActionResult> OnPostDisableTotp()
         {
             var user = await User.GetUser();
             user.TotpActive = false;
-            user.TotpSecret = String.Empty;
+            user.TotpSecret = string.Empty;
             _db.Users.Update(user);
             await _db.SaveChangesAsync();
 

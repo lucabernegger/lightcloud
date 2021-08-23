@@ -1,6 +1,4 @@
 using System;
-using System.Diagnostics;
-using System.Linq;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
@@ -33,9 +31,8 @@ namespace Cloud.Pages
                 var user = UserManager.GetUserFromName(email);
                 if (user.TotpActive)
                 {
-                    
-                    this.HttpContext.Session.SetString("loginValid","true");
-                    this.HttpContext.Session.SetInt32("userId",user.Id);
+                    HttpContext.Session.SetString("loginValid", "true");
+                    HttpContext.Session.SetInt32("userId", user.Id);
                     var hash1 = password.Sha512();
                     var serverKeyComponent1 = UserManager.GenerateRandomCryptoString();
 
@@ -45,9 +42,8 @@ namespace Cloud.Pages
                     hash1 = null;
                     GC.Collect();
                     return Redirect("/Login?totp_req");
-
                 }
-                
+
                 user.LastLogin = DateTime.Now;
                 _db.Users.Update(user);
                 await _db.SaveChangesAsync();
@@ -61,7 +57,7 @@ namespace Cloud.Pages
                 await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
                 var hash = password.Sha512();
                 var serverKeyComponent = UserManager.GenerateRandomCryptoString();
-                
+
                 HttpContext.Session.SetString("ServerFileKeyComponent", serverKeyComponent);
                 HttpContext.Response.Cookies.Append("ClientFileKeyComponent", hash.Encrypt(serverKeyComponent));
                 password = null;
@@ -75,20 +71,17 @@ namespace Cloud.Pages
 
         public async Task<IActionResult> OnPostCheckTotp(string totp)
         {
-           
-            var user =await UserManager.GetUserById(HttpContext.Session.GetInt32("userId").Value);
-            
-            var lastLoginAttemtp = DateTime.FromBinary(long.Parse(HttpContext.Session.GetString("lastLoginAttempt") ?? "0"));
-            if (lastLoginAttemtp.AddSeconds(30) > DateTime.Now)
-            {
-                return Redirect("/Login?error=" + UrlEncoder.Default.Encode("Try again in 30s"));
+            var user = await UserManager.GetUserById(HttpContext.Session.GetInt32("userId").Value);
 
-            }
+            var lastLoginAttemtp =
+                DateTime.FromBinary(long.Parse(HttpContext.Session.GetString("lastLoginAttempt") ?? "0"));
+            if (lastLoginAttemtp.AddSeconds(30) > DateTime.Now)
+                return Redirect("/Login?error=" + UrlEncoder.Default.Encode("Try again in 30s"));
             var validLogin = HttpContext.Session.GetString("loginValid") == "true";
             var totpObj = new Totp(Base32Encoding.ToBytes(user.TotpSecret));
-            var valid = totpObj.VerifyTotp(totp, out long timeStepMatched,
-                new VerificationWindow(2,2));
-            this.HttpContext.Session.SetString("lastLoginAttempt", DateTime.Now.ToBinary().ToString());
+            var valid = totpObj.VerifyTotp(totp, out var timeStepMatched,
+                new VerificationWindow(2, 2));
+            HttpContext.Session.SetString("lastLoginAttempt", DateTime.Now.ToBinary().ToString());
 
             if (valid && validLogin)
             {
@@ -100,6 +93,7 @@ namespace Cloud.Pages
                 await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
                 return RedirectToPage("/Index");
             }
+
             return Redirect("/Login?error=" + UrlEncoder.Default.Encode("Code Invalid"));
         }
     }

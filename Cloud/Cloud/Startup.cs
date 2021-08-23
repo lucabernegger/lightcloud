@@ -13,7 +13,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -27,16 +26,6 @@ namespace Cloud
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration)
-        {
-            Configuration = configuration;
-        }
-
-        public IConfiguration Configuration { get; }
-
-        public static Settings Settings { get; } =
-            JsonSerializer.Deserialize<Settings>(File.ReadAllText("settings.json"));
-
         public static Dictionary<string, string> FileExtensionIcon = new()
         {
             {
@@ -90,7 +79,7 @@ namespace Cloud
             {
                 ".pdf",
                 "https://raw.githubusercontent.com/microsoft/fluentui-system-icons/master/assets/Document%20PDF/SVG/ic_fluent_document_pdf_32_regular.svg"
-            }, 
+            },
             {
                 ".csv",
                 "https://raw.githubusercontent.com/microsoft/fluentui-system-icons/master/assets/Table/SVG/ic_fluent_table_32_regular.svg"
@@ -105,10 +94,27 @@ namespace Cloud
             }
         };
 
-        public static string[] TextPreviewFileExtensions = {".txt"};
-        public static string[] ImagePreviewFileExtensions = {".png",".jpg",".jpeg",".gif",".bmp"};
-        public static string[] CodePreviewFileExtensions = { ".sh", ".css", ".less", ".c",".h",".vb",".java",".lua",".php",".py",".yaml",".go",".scss",".sql",".ts" };
+        public static string[] TextPreviewFileExtensions = { ".txt" };
+        public static string[] ImagePreviewFileExtensions = { ".png", ".jpg", ".jpeg", ".gif", ".bmp" };
+
+        public static string[] CodePreviewFileExtensions =
+        {
+            ".sh", ".css", ".less", ".c", ".h", ".vb", ".java", ".lua", ".php", ".py", ".yaml", ".go", ".scss", ".sql",
+            ".ts"
+        };
+
         public static Dictionary<int, string> PreviewCache = new();
+
+        public Startup(IConfiguration configuration)
+        {
+            Configuration = configuration;
+        }
+
+        public IConfiguration Configuration { get; }
+
+        public static Settings Settings { get; } =
+            JsonSerializer.Deserialize<Settings>(File.ReadAllText("settings.json"));
+
         public void ConfigureServices(IServiceCollection services)
         {
             services.Configure<FormOptions>(x =>
@@ -119,16 +125,11 @@ namespace Cloud
             });
             services.AddRazorPages().AddRazorRuntimeCompilation();
             services.AddDbContext<ApplicationDbContext>();
-            services.AddSession(options =>
-            {
-                options.IdleTimeout = TimeSpan.FromMinutes(5);
-            });
+            services.AddSession(options => { options.IdleTimeout = TimeSpan.FromMinutes(5); });
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(options =>
             {
                 options.LoginPath = new PathString("/Login");
             });
-            
-
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -179,16 +180,16 @@ namespace Cloud
         private void CheckIfNewInstallation()
         {
             using var db = new ApplicationDbContext();
-            #if (!DEBUG)
-                   db.Database.Migrate();     
-            #endif
+#if (!DEBUG)
+                   db.Database.Migrate();
+#endif
 
 
             if (!db.Users.Any())
             {
                 var pw = UserManager.GenerateRandomPassword();
                 var hashed = UserManager.GenerateHashAndSalt(pw);
-                db.Users.Add(new()
+                db.Users.Add(new User
                 {
                     IsAdmin = true,
                     MaxFileBytes = FileMethods.GigabyteToByte(10),
@@ -205,7 +206,7 @@ namespace Cloud
                 Console.ForegroundColor = ConsoleColor.Yellow;
                 Console.WriteLine("[INFO] -------- Generated Admin-account ------- ");
                 Console.WriteLine("[INFO] Username: admin");
-                Console.WriteLine("[INFO] Password: "+pw);
+                Console.WriteLine("[INFO] Password: " + pw);
                 Console.WriteLine("[INFO] -------- Generated Admin-account ------- ");
                 Console.ForegroundColor = ConsoleColor.White;
             }
@@ -222,19 +223,19 @@ namespace Cloud
             var user = await UserManager.GetUserById(Convert.ToInt32(meta["uid"].GetString(Encoding.UTF8)));
             await using var stream = await file.GetContentAsync(cs);
             var filepath = env.ContentRootPath + "/Data/" + user.Id + "/" + meta["path"].GetString(Encoding.UTF8);
-            var size = db.Files.Where(o=>o.UserId == user.Id).ToList().Sum(o => o.Size);
+            var size = db.Files.Where(o => o.UserId == user.Id).ToList().Sum(o => o.Size);
             if (stream.Length + size < user.MaxFileBytes)
             {
-                var f = new DbFile()
+                var f = new DbFile
                 {
                     Name = meta["filename"].GetString(Encoding.UTF8),
-                    Path = filepath.Replace(System.IO.Path.AltDirectorySeparatorChar, System.IO.Path.DirectorySeparatorChar),
+                    Path = filepath.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar),
                     Filename = meta["filename"].GetString(Encoding.UTF8),
                     LastModified = DateTime.Now,
                     Size = stream.Length,
                     UserId = user.Id
                 };
-                
+
                 db.Files.Add(f);
                 await db.SaveChangesAsync(cs);
                 var k1 = clientComponent.Decrypt(serverComponent);
@@ -246,13 +247,9 @@ namespace Cloud
                 await stream.DisposeAsync();
                 GC.Collect();
                 await File.WriteAllBytesAsync(filepath + "/" + meta["filename"].GetString(Encoding.UTF8), bytes, cs);
-
             }
 
             await stream.DisposeAsync();
         }
-        
-        
     }
-
 }

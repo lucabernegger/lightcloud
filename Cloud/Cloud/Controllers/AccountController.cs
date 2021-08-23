@@ -15,6 +15,5 @@ namespace Cloud.Controllers
             await HttpContext.SignOutAsync();
             return RedirectToPage("/Index");
         }
-
     }
 }

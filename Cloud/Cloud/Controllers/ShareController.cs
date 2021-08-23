@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Web;
 using Cloud.Extensions;
 using Cloud.Models;
 using Microsoft.AspNetCore.Hosting;
@@ -28,7 +26,7 @@ namespace Cloud.Controllers
 
 
         [HttpGet("download")]
-        public async Task<IActionResult> Download(string hash,string p)
+        public async Task<IActionResult> Download(string hash, string p)
         {
             var dbFile = _db.Shares.FirstOrDefault(o => o.ShareLink == hash);
             if (dbFile is not null)

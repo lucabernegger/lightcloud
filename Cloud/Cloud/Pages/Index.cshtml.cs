@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Drawing;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -8,7 +7,6 @@ using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Web;
 using Cloud.Extensions;
 using Cloud.Models;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -19,6 +17,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
+using FileShare = Cloud.Models.FileShare;
 
 namespace Cloud.Pages
 {
@@ -43,9 +42,7 @@ namespace Cloud.Pages
             var targetFolderName = $"{_env.ContentRootPath}/Data/{user.Id}/{Path}/{folderName}";
             Directory.CreateDirectory(targetFolderName);
             foreach (var dbFile in _db.Files.Where(o => o.Path == targetFolderName && o.UserId == user.Id))
-            {
                 _db.Remove(dbFile);
-            }
 
             await _db.SaveChangesAsync();
         }
@@ -53,8 +50,8 @@ namespace Cloud.Pages
         public async Task<IActionResult> OnGetDownload(string path, bool forceDownload = false)
         {
             var user = await User.GetUser();
-            var clientComponent = this.HttpContext.Request.Cookies["ClientFileKeyComponent"];
-            var serverComponent = this.HttpContext.Session.GetString("ServerFileKeyComponent");
+            var clientComponent = HttpContext.Request.Cookies["ClientFileKeyComponent"];
+            var serverComponent = HttpContext.Session.GetString("ServerFileKeyComponent");
             var key = user.FilePassword.Decrypt(clientComponent.Decrypt(serverComponent));
             var file = System.IO.File.Open(@$"{_env.ContentRootPath}/Data/{user.Id}/{path}", FileMode.Open,
                 FileAccess.Read);
@@ -69,28 +66,32 @@ namespace Cloud.Pages
             if (!forceDownload && Startup.TextPreviewFileExtensions.Contains(fileExtension))
             {
                 var id = new Random().Next(10000);
-                Startup.PreviewCache.Add(id,Encoding.Default.GetString(bytes));
+                Startup.PreviewCache.Add(id, Encoding.Default.GetString(bytes));
                 return Redirect($"/Index?preview={id}&preview_type=text");
             }
+
             if (!forceDownload && fileExtension == ".json")
             {
                 var id = new Random().Next(10000);
                 Startup.PreviewCache.Add(id, Encoding.Default.GetString(bytes));
                 return Redirect($"/Index?preview={id}&preview_type=json");
             }
+
             if (!forceDownload && Startup.ImagePreviewFileExtensions.Contains(fileExtension))
             {
                 var id = new Random().Next(10000);
-                string base64String = Convert.ToBase64String(bytes);
+                var base64String = Convert.ToBase64String(bytes);
                 Startup.PreviewCache.Add(id, $"data:image/{fileExtension.Remove(0, 1)};base64,{base64String}");
                 return Redirect($"/Index?preview={id}&preview_type=image");
             }
+
             if (!forceDownload && Startup.CodePreviewFileExtensions.Contains(fileExtension))
             {
                 var id = new Random().Next(10000);
                 Startup.PreviewCache.Add(id, Encoding.Default.GetString(bytes));
                 return Redirect($"/Index?preview={id}&preview_type=code");
             }
+
             return File(bytes, "application/" + fileExtension,
                 System.IO.Path.GetFileName(path));
         }
@@ -112,8 +113,8 @@ namespace Cloud.Pages
                         System.IO.File.Delete(@$"{_env.ContentRootPath}/Data/{dbfile.File}.share");
                     }
                 }
-
             }
+
             await _db.SaveChangesAsync();
 
             System.IO.File.Delete(targetFileName);
@@ -133,8 +134,8 @@ namespace Cloud.Pages
             var user = await User.GetUser();
             if (!FileMethods.IsFileShared(path, user.Id))
             {
-                var clientComponent = this.HttpContext.Request.Cookies["ClientFileKeyComponent"];
-                var serverComponent = this.HttpContext.Session.GetString("ServerFileKeyComponent");
+                var clientComponent = HttpContext.Request.Cookies["ClientFileKeyComponent"];
+                var serverComponent = HttpContext.Session.GetString("ServerFileKeyComponent");
                 var key = user.FilePassword.Decrypt(clientComponent.Decrypt(serverComponent));
                 var file = System.IO.File.Open(@$"{_env.ContentRootPath}/Data/{user.Id}/{path}", FileMode.Open,
                     FileAccess.Read);
@@ -142,9 +143,10 @@ namespace Cloud.Pages
                 var bytes = Crypto.DecryptByteArray(Encoding.UTF8.GetBytes(key), bytesToDec);
                 var sKey = UserManager.GenerateRandomCryptoString(16);
                 bytes = Crypto.EncryptByteArray(Encoding.UTF8.GetBytes(sKey), bytes);
-                await System.IO.File.WriteAllBytesAsync(@$"{_env.ContentRootPath}/Data/{user.Id}/{path}.share", bytes, cs);
+                await System.IO.File.WriteAllBytesAsync(@$"{_env.ContentRootPath}/Data/{user.Id}/{path}.share", bytes,
+                    cs);
 
-                var share = new Models.FileShare
+                var share = new FileShare
                 {
                     ExpiryDate = expiryDate,
                     File = @$"{user.Id}/" + path,
@@ -158,7 +160,8 @@ namespace Cloud.Pages
                 serverComponent = null;
                 await file.DisposeAsync();
                 GC.Collect();
-                string link = (Startup.Settings.BaseDomain + "Share/download?hash=" + UrlEncoder.Default.Encode(share.ShareLink) + "&p=" + UrlEncoder.Default.Encode(sKey));
+                var link = Startup.Settings.BaseDomain + "Share/download?hash=" +
+                           UrlEncoder.Default.Encode(share.ShareLink) + "&p=" + UrlEncoder.Default.Encode(sKey);
                 return Redirect($"/Index?download_link={link}");
             }
 
@@ -190,22 +193,25 @@ namespace Cloud.Pages
         {
             var user = await User.GetUser();
             var ids = JsonConvert.DeserializeObject<int[]>(markedJson);
-            foreach (var id in ids)
-            {
-                var dbfile = _db.Files.FirstOrDefault(o => o.Id == id && o.UserId == user.Id);
-                if (dbfile is null)
-                    continue;
-
-                var targetFileName = $"{dbfile.Path}{dbfile.Filename}";
-                var dbshare = _db.Shares.FirstOrDefault(o => o.File == @$"{user.Id}/" + dbfile.Path);
-                if (dbshare is not null)
+            if (ids != null)
+                foreach (var id in ids)
                 {
-                    _db.Shares.Remove(dbshare);
-                    System.IO.File.Delete(@$"{_env.ContentRootPath}/Data/{dbshare.File}.share");
+                    var dbfile = _db.Files.FirstOrDefault(o => o.Id == id && o.UserId == user.Id);
+                    if (dbfile is null)
+                        continue;
+
+                    var targetFileName = $"{dbfile.Path}{dbfile.Filename}";
+                    var dbshare = _db.Shares.FirstOrDefault(o => o.File == @$"{user.Id}/" + dbfile.Path);
+                    if (dbshare is not null)
+                    {
+                        _db.Shares.Remove(dbshare);
+                        System.IO.File.Delete(@$"{_env.ContentRootPath}/Data/{dbshare.File}.share");
+                    }
+
+                    _db.Remove(dbfile);
+                    System.IO.File.Delete(targetFileName);
                 }
-                _db.Remove(dbfile);
-                System.IO.File.Delete(targetFileName);
-            }
+
             await _db.SaveChangesAsync();
             return Page();
         }
@@ -214,8 +220,8 @@ namespace Cloud.Pages
         {
             var user = await User.GetUser();
             var ids = JsonConvert.DeserializeObject<int[]>(markedJson);
-            var clientComponent = this.HttpContext.Request.Cookies["ClientFileKeyComponent"];
-            var serverComponent = this.HttpContext.Session.GetString("ServerFileKeyComponent");
+            var clientComponent = HttpContext.Request.Cookies["ClientFileKeyComponent"];
+            var serverComponent = HttpContext.Session.GetString("ServerFileKeyComponent");
             var key = user.FilePassword.Decrypt(clientComponent.Decrypt(serverComponent));
             await using var outStream = new MemoryStream();
             using (var archive = new ZipArchive(outStream, ZipArchiveMode.Create, false))
@@ -238,6 +244,7 @@ namespace Cloud.Pages
                         await stream.DisposeAsync();
                     }
             }
+
             var compressedBytes = outStream.ToArray();
 
             key = null;
@@ -247,7 +254,7 @@ namespace Cloud.Pages
             return File(compressedBytes, "application/zip", $"{DateTime.Now.ToShortDateString()}.zip");
         }
 
-        public async Task<IActionResult> OnPostRenameFile(int id,string path, string name,bool isFile)
+        public async Task<IActionResult> OnPostRenameFile(int id, string path, string name, bool isFile)
         {
             var user = await User.GetUser();
             Debug.WriteLine(isFile);
@@ -274,15 +281,14 @@ namespace Cloud.Pages
         {
             var user = await User.GetUser();
             var targetFileName = $"{_env.ContentRootPath}/Data/{user.Id}/{Path}";
-            var clientComponent = this.HttpContext.Request.Cookies["ClientFileKeyComponent"];
-            var serverComponent = this.HttpContext.Session.GetString("ServerFileKeyComponent");
+            var clientComponent = HttpContext.Request.Cookies["ClientFileKeyComponent"];
+            var serverComponent = HttpContext.Session.GetString("ServerFileKeyComponent");
             var key = user.FilePassword.Decrypt(clientComponent.Decrypt(serverComponent));
             await using var outStream = new MemoryStream();
-            using (var archive = new ZipArchive(outStream, ZipArchiveMode.Create,false))
+            using (var archive = new ZipArchive(outStream, ZipArchiveMode.Create, false))
             {
-                foreach (string file in Directory.EnumerateFiles(targetFileName, "*.*", SearchOption.AllDirectories))
+                foreach (var file in Directory.EnumerateFiles(targetFileName, "*.*", SearchOption.AllDirectories))
                 {
-
                     var fileInArchive = archive.CreateEntry(new FileInfo(file).Name, CompressionLevel.Optimal);
                     await using var entryStream = fileInArchive.Open();
                     var bytesToDec = await System.IO.File.ReadAllBytesAsync(file);
@@ -292,12 +298,11 @@ namespace Cloud.Pages
                     await fileToCompressStream.CopyToAsync(entryStream);
                     await stream.DisposeAsync();
                 }
-                
             }
+
             var compressedBytes = outStream.ToArray();
 
             return File(compressedBytes, "application/zip", $"{new DirectoryInfo(targetFileName).Name}.zip");
-
         }
     }
 }

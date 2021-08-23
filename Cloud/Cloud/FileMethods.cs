@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using Cloud.Extensions;
-using Cloud.Migrations;
 using Cloud.Models;
 using Microsoft.AspNetCore.Http;
 
@@ -17,7 +15,7 @@ namespace Cloud
     {
         public static string PrettyJson(string unPrettyJson)
         {
-            var options = new JsonSerializerOptions()
+            var options = new JsonSerializerOptions
             {
                 WriteIndented = true
             };
@@ -26,9 +24,10 @@ namespace Cloud
 
             return JsonSerializer.Serialize(jsonElement, options);
         }
+
         public static string BytesToString(long byteCount)
         {
-            string[] suf = {"B", "KB", "MB", "GB", "TB", "PB", "EB"}; //Longs run out around EB
+            string[] suf = { "B", "KB", "MB", "GB", "TB", "PB", "EB" }; //Longs run out around EB
             if (byteCount == 0)
                 return "0" + suf[0];
             var bytes = Math.Abs(byteCount);
@@ -39,7 +38,7 @@ namespace Cloud
 
         public static double ByteToGigabyte(long bytes)
         {
-            return Math.Round((double) bytes / 1000000000, 2);
+            return Math.Round((double)bytes / 1000000000, 2);
         }
 
         public static long GigabyteToByte(long bytes)
@@ -58,7 +57,7 @@ namespace Cloud
             foreach (var di in dis) size += GetSizeOfDirectory(di);
             return size;
         }
-        
+
         public static bool IsFileShared(string path, int userid)
         {
             using var db = new ApplicationDbContext();
@@ -66,7 +65,7 @@ namespace Cloud
             return db.Shares.Any(o => o.File == p);
         }
 
-        public static string GetSharedLink(string path, User user,HttpContext ctx)
+        public static string GetSharedLink(string path, User user, HttpContext ctx)
         {
             using var db = new ApplicationDbContext();
             var p = @$"{user.Id}/{path}";
@@ -78,30 +77,22 @@ namespace Cloud
                 return Startup.Settings.BaseDomain + "Share/download?hash=" +
                        UrlEncoder.Default.Encode(dbshare?.ShareLink) + "&p=" +
                        UrlEncoder.Default.Encode(dbshare.Key.Decrypt(key));
-            return String.Empty;
+            return string.Empty;
         }
+
         public static string GetRelativePath(string fromPath, string toPath)
         {
-            if (string.IsNullOrEmpty(fromPath))
-            {
-                throw new ArgumentNullException(nameof(fromPath));
-            }
+            if (string.IsNullOrEmpty(fromPath)) throw new ArgumentNullException(nameof(fromPath));
 
-            if (string.IsNullOrEmpty(toPath))
-            {
-                throw new ArgumentNullException(nameof(toPath));
-            }
+            if (string.IsNullOrEmpty(toPath)) throw new ArgumentNullException(nameof(toPath));
 
-            Uri fromUri = new Uri(AppendDirectorySeparatorChar(fromPath));
-            Uri toUri = new Uri(AppendDirectorySeparatorChar(toPath));
+            var fromUri = new Uri(AppendDirectorySeparatorChar(fromPath));
+            var toUri = new Uri(AppendDirectorySeparatorChar(toPath));
 
-            if (fromUri.Scheme != toUri.Scheme)
-            {
-                return toPath;
-            }
+            if (fromUri.Scheme != toUri.Scheme) return toPath;
 
-            Uri relativeUri = fromUri.MakeRelativeUri(toUri);
-            string relativePath = Uri.UnescapeDataString(relativeUri.ToString());
+            var relativeUri = fromUri.MakeRelativeUri(toUri);
+            var relativePath = Uri.UnescapeDataString(relativeUri.ToString());
 
             if (string.Equals(toUri.Scheme, Uri.UriSchemeFile, StringComparison.OrdinalIgnoreCase))
             {
@@ -114,18 +105,16 @@ namespace Cloud
         private static string AppendDirectorySeparatorChar(string path)
         {
             // Append a slash only if the path is a directory and does not have a slash.
-            if (!Path.HasExtension(path) &&
-                !path.EndsWith(Path.DirectorySeparatorChar.ToString()))
-            {
+            if (path != null && !Path.HasExtension(path) && !path.EndsWith(Path.DirectorySeparatorChar.ToString()))
                 return path + Path.DirectorySeparatorChar;
-            }
 
             return path;
         }
-        public static Byte[] BitmapToBytesCode(Bitmap image)
+
+        public static byte[] BitmapToBytesCode(Bitmap image)
         {
             using var stream = new MemoryStream();
-            image.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
+            image.Save(stream, ImageFormat.Png);
             return stream.ToArray();
         }
     }

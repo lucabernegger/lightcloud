@@ -40,7 +40,7 @@ namespace Cloud.Pages.Admin
         public async Task OnGetAsync()
         {
             var user = await UserManager.GetUserById(Id);
-            var dict = new Dictionary<int, string> {{0, "User"}, {1, "Admin"}};
+            var dict = new Dictionary<int, string> { { 0, "User" }, { 1, "Admin" } };
             Options = new SelectList(dict, "Key", "Value", user.IsAdmin ? 1 : 0);
         }
     }

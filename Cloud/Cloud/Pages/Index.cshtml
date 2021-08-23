@@ -1,9 +1,8 @@
 ﻿@page
-@using Cloud.Models
+@using Microsoft.AspNetCore.Http
 @using Microsoft.Extensions.Hosting
 @using Microsoft.AspNetCore.Authentication
-@using Microsoft.AspNetCore.Http
-@using System.Diagnostics
+@using Cloud.Models
 @model IndexModel
 @inject ApplicationDbContext _db;
 @inject IHostEnvironment _env;
@@ -14,7 +13,6 @@
         await HttpContext.SignOutAsync();
         HttpContext.Response.Redirect("/Login");
         return;
-
     }
     ViewData["Title"] = "Dashboard";
 }
@@ -30,19 +28,19 @@
     textarea.textarea-autosize {
         height: 2.25rem;
         min-height: 2.25rem;
-        resize: none;
         overflow-y: hidden;
+        resize: none;
     }
 
-        textarea.textarea-autosize.form-control-lg {
-            height: 3.75rem;
-            min-height: 3.75rem;
-        }
+    textarea.textarea-autosize.form-control-lg {
+        height: 3.75rem;
+        min-height: 3.75rem;
+    }
 
-        textarea.textarea-autosize.form-control-sm {
-            height: 2rem;
-            min-height: 2rem;
-        }
+    textarea.textarea-autosize.form-control-sm {
+        height: 2rem;
+        min-height: 2rem;
+    }
 </style>
 <h3 class="mt-3">Files</h3>
 <button type="button" class="btn btn-sm btn-primary" data-mdb-toggle="modal" data-mdb-target="#fileUploadModal">
@@ -54,11 +52,11 @@
 
 <div id="markbuttons" style="opacity: 0" class="form-row align-items-center">
     <form method="post" asp-page-handler="DownloadMarked" class="d-inline-flex mt-2">
-        <input type="hidden" name="markedJson" class="markedJson" />
+        <input type="hidden" name="markedJson" class="markedJson"/>
         <button type="submit" class="btn btn-sm btn-info" disabled=""><i class="fas fa-cloud-download-alt"></i> Download Selected</button>
     </form>
     <form method="post" asp-page-handler="DeleteMarked" class="d-inline-flex mt-2">
-        <input type="hidden" name="markedJson" class="markedJson" />
+        <input type="hidden" name="markedJson" class="markedJson"/>
         <button type="submit" class="btn btn-sm btn-danger " disabled=""><i class="fas fa-trash text-white"></i> Delete Selected</button>
     </form>
 </div>
@@ -90,9 +88,9 @@
                     <button type="button" class="btn-close" data-mdb-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <input type="hidden" name="path" id="shareFile" />
+                    <input type="hidden" name="path" id="shareFile"/>
                     <label for="shareExpiry">Expires</label>
-                    <input type="date" name="expiryDate" class="form-control" id="shareExpiry" required />
+                    <input type="date" name="expiryDate" class="form-control" id="shareExpiry" required/>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-mdb-dismiss="modal">
@@ -115,8 +113,8 @@
                 </div>
                 <div class="modal-body">
                     <label for="fileName">Foldername</label>
-                    <input type="text" name="foldername" id="fileName" class="form-control" />
-                    <input type="hidden" name="Path" value="@Model.Path" />
+                    <input type="text" name="foldername" id="fileName" class="form-control"/>
+                    <input type="hidden" name="Path" value="@Model.Path"/>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-mdb-dismiss="modal">
@@ -138,11 +136,11 @@
                     <button type="button" class="btn-close" data-mdb-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <input type="hidden" name="id" id="renameFileId" />
-                    <input type="hidden" name="isFile" id="isFile" />
-                    <input type="hidden" name="path" id="renameFilepath" />
+                    <input type="hidden" name="id" id="renameFileId"/>
+                    <input type="hidden" name="isFile" id="isFile"/>
+                    <input type="hidden" name="path" id="renameFilepath"/>
                     <label for="renameName">Rename to</label>
-                    <input type="text" name="name" class="form-control" id="renameName" required />
+                    <input type="text" name="name" class="form-control" id="renameName" required/>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-mdb-dismiss="modal">
@@ -164,7 +162,7 @@
                     <h5 class="modal-title" id="previewFileModalLabel">Preview File</h5>
                     <button type="button" class="btn-close" data-mdb-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body" id="previewFileModalBody" style="overflow-y: scroll; max-height: 80vh;">
+                <div class="modal-body" id="previewFileModalBody" style="max-height: 80vh; overflow-y: scroll;">
 
                 </div>
                 <div class="modal-footer">
@@ -177,6 +175,7 @@
         </div>
     </div>
 </div>
+
 @section Scripts
 {
 
@@ -207,15 +206,16 @@
                         $("#previewFileModal").modal("show");
                     }
                     if (urlParams.get('preview_type') === "json") {
-                        var obj = JSON.parse(data);
-                        var pretty = JSON.stringify(obj, undefined, 4);
+                        const obj = JSON.parse(data);
+                        const pretty = JSON.stringify(obj, undefined, 4);
                         content.html(`<textarea class="form-control" readonly rows=20>${pretty}</textarea>`);
                         $("#previewFileModal").modal("show");
                     }
                     if (urlParams.get('preview_type') === "image") {
                         content.html(`<img class="img-fluid" src=${data} />`);
                         $("#previewFileModal").modal("show");
-                    } if (urlParams.get('preview_type') === "code") {
+                    }
+                    if (urlParams.get('preview_type') === "code") {
                         content.html(`<pre><code>${data}</div></pre>`);
                         hljs.highlightAll();
                         $("#previewFileModal").modal("show");
@@ -327,8 +327,8 @@
         }
 
         function prettyPrint(output, json) {
-            var obj = JSON.parse(json);
-            var pretty = JSON.stringify(obj, undefined, 4);
+            const obj = JSON.parse(json);
+            const pretty = JSON.stringify(obj, undefined, 4);
             output.value = pretty;
         }
 

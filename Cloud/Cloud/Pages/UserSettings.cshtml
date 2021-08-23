@@ -12,13 +12,13 @@
         <form method="post" asp-page-handler="SetPassword">
             <div class="form-group">
                 <label for="oldPassword">Current password</label>
-                <input type="password" id="oldPassword" class="form-control" asp-for="SetPasswordData.OldPassword" />
+                <input type="password" id="oldPassword" class="form-control" asp-for="SetPasswordData.OldPassword"/>
 
                 <label for="newPassword">New Password</label>
-                <input type="password" id="newPassword" class="form-control" asp-for="SetPasswordData.NewPassword" />
+                <input type="password" id="newPassword" class="form-control" asp-for="SetPasswordData.NewPassword"/>
 
                 <label for="newPasswordRepeat">Repeat Password</label>
-                <input type="password" id="newPasswordRepeat" class="form-control" asp-for="SetPasswordData.NewPasswordRepeat" />
+                <input type="password" id="newPasswordRepeat" class="form-control" asp-for="SetPasswordData.NewPasswordRepeat"/>
             </div>
             <button type="submit" class="btn btn-primary w-100 mt-3">Save</button>
         </form>
@@ -34,13 +34,11 @@
                 <label for="showFileExtentions">Show known File Extensions</label>
                 @if (user.ShowKnownFileExtensions)
                 {
-                    <input type="checkbox" id="showFileExtentions" class="form-check-input" asp-for="SettingsData.ShowFileExtensions" checked />
-
+                    <input type="checkbox" id="showFileExtentions" class="form-check-input" asp-for="SettingsData.ShowFileExtensions" checked/>
                 }
                 else
                 {
-                    <input type="checkbox" id="showFileExtentions" class="form-check-input" asp-for="SettingsData.ShowFileExtensions" />
-
+                    <input type="checkbox" id="showFileExtentions" class="form-check-input" asp-for="SettingsData.ShowFileExtensions"/>
                 }
 
             </div>
@@ -68,18 +66,19 @@
                     <button type="submit" class="btn btn-danger w-100 mt-1">Disable</button>
                 </form>
             }
-            
-            
+
+
         </div>
     </div>
 </div>
+
 @section Scripts
 {
     <script>
 
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.has('TotpSecret')) {
-            const img = '<img src="@String.Format("data:image/png;base64,{0}", ViewData["qr"])" height="300" width="300"/>';
+            const img = '<img src="@string.Format("data:image/png;base64,{0}", ViewData["qr"])" height="300" width="300"/>';
             Swal.fire(
                 '2FA activated',
                 img + "<br>Secret:<input type='text' readonly class='form-control text-center' value='" + urlParams.get('TotpSecret') + "'>",

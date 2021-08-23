@@ -1,148 +1,146 @@
-﻿@using Microsoft.AspNetCore.Hosting
+﻿@using Cloud.Models
+@using Microsoft.AspNetCore.Hosting
 @using System.IO
-@using Cloud.Extensions
-@using Cloud.Models
-@using System.Diagnostics
-@using System.Text.Encodings.Web
 @inject ApplicationDbContext _db;
 @inject IWebHostEnvironment _env;
 @{
     var user = await User.GetUser();
-    string currentPath = String.Empty;
+    var currentPath = string.Empty;
     currentPath = !string.IsNullOrEmpty(Model?.Path) ? (string)System.IO.Path.Combine(_env.ContentRootPath, "Data", user.Id.ToString(), Model.Path) : System.IO.Path.Combine(_env.ContentRootPath, "Data", user.Id.ToString());
     if (currentPath.Last() != '/')
     {
         currentPath += '/';
     }
     currentPath = currentPath.Replace(System.IO.Path.AltDirectorySeparatorChar, System.IO.Path.DirectorySeparatorChar);
-    if (System.IO.File.Exists(currentPath))
+    if (File.Exists(currentPath))
         return;
 }
 
 <table class="table table-hover table-responsive shadow" style="font-size: 1.2em" id="table">
     <thead>
-        <tr>
-            <td><input type="checkbox" class="form-check-input mark-all-checkbox" /></td>
-            <td>Name</td>
-            <td></td>
-            <td>Size</td>
-            <td>Modified</td>
-            <td></td>
-        </tr>
+    <tr>
+        <td>
+            <input type="checkbox" class="form-check-input mark-all-checkbox"/>
+        </td>
+        <td>Name</td>
+        <td></td>
+        <td>Size</td>
+        <td>Modified</td>
+        <td></td>
+    </tr>
     </thead>
     <tbody>
-        @foreach (var dir in Directory.EnumerateDirectories(currentPath).AsParallel())
-        {
-            var info = new DirectoryInfo(dir);
-            var path = Cloud.FileMethods.GetRelativePath(System.IO.Path.Combine(_env.ContentRootPath , "Data" , user.Id.ToString()), dir);
-            <tr>
+    @foreach (var dir in Directory.EnumerateDirectories(currentPath).AsParallel())
+    {
+        var info = new DirectoryInfo(dir);
+        var path = FileMethods.GetRelativePath(System.IO.Path.Combine(_env.ContentRootPath, "Data", user.Id.ToString()), dir);
+        <tr>
 
-                <td data-id="-1"></td>
-                <td>
-                    <span class="ficon">
-                        <a asp-route-path="@path" class="ficon">
-                            <img src="https://raw.githubusercontent.com/microsoft/fluentui-system-icons/master/assets/Folder/SVG/ic_fluent_folder_28_regular.svg" height="28" width="28"/>
-                            @info.Name
-                        </a>
-                    </span>
-                </td>
-                <td>
-                    <a href="#"
-                       id="navbarDropdownMenuLink"
-                       role="button"
-                       data-mdb-toggle="dropdown"
-                       aria-expanded="false"
-                       style="line-height: 100%; vertical-align: middle;">
-                        <i class="fas fa-ellipsis-h"></i>
+            <td data-id="-1"></td>
+            <td>
+                <span class="ficon">
+                    <a asp-route-path="@path" class="ficon">
+                        <img src="https://raw.githubusercontent.com/microsoft/fluentui-system-icons/master/assets/Folder/SVG/ic_fluent_folder_28_regular.svg" height="28" width="28"/>
+                        @info.Name
                     </a>
-                    <ul class="dropdown-menu dropdown-menu-end "
-                        aria-labelledby="navbarDropdownMenuLink" style="background: #013a63 !important">
-                        <li>
-                            <a class="dropdown-item text-white nohover" onclick="openRenameFileModal('@path','@info.Name',false)"><i class="far fa-edit text-secondary"></i> Rename</a>
-                        </li>
-                        <li>
-                            <a class="dropdown-item text-white nohover" asp-page-handler="DownloadFolder" asp-route-path="@path"><i class="fas fa-cloud-download-alt text-secondary"></i> Download Folder</a>
-                        </li>
+                </span>
+            </td>
+            <td>
+                <a href="#"
+                   id="navbarDropdownMenuLink"
+                   role="button"
+                   data-mdb-toggle="dropdown"
+                   aria-expanded="false"
+                   style="line-height: 100%; vertical-align: middle;">
+                    <i class="fas fa-ellipsis-h"></i>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end "
+                    aria-labelledby="navbarDropdownMenuLink" style="background: #013a63 !important">
+                    <li>
+                        <a class="dropdown-item text-white nohover" onclick="openRenameFileModal('@path', '@info.Name', false)"><i class="far fa-edit text-secondary"></i> Rename</a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item text-white nohover" asp-page-handler="DownloadFolder" asp-route-path="@path"><i class="fas fa-cloud-download-alt text-secondary"></i> Download Folder</a>
+                    </li>
 
-                        <li>
-                            <a class="dropdown-item text-white nohover" asp-page-handler="DeleteFolder" asp-route-path="@path" asp-route-fileName="@info.Name"><i class="fas fa-trash text-danger"></i> Delete</a>
-                        </li>
+                    <li>
+                        <a class="dropdown-item text-white nohover" asp-page-handler="DeleteFolder" asp-route-path="@path" asp-route-fileName="@info.Name"><i class="fas fa-trash text-danger"></i> Delete</a>
+                    </li>
 
-                    </ul>
-                </td>
-                <td>@FileMethods.BytesToString(info.GetSizeOfDirectory())</td>
-                <td>@info.LastWriteTime.ToShortDateString()</td>
-                <td></td>
-            </tr>
-        }
-        @foreach (var file in _db.Files.Where(o => o.UserId == user.Id && o.Path == currentPath).AsParallel())
-        {
-            var path = Cloud.FileMethods.GetRelativePath(System.IO.Path.Combine(_env.ContentRootPath , "Data" , user.Id.ToString()), System.IO.Path.Combine(file.Path,file.Filename));
-            var isShared = FileMethods.IsFileShared(path, user.Id);
-            var extension = System.IO.Path.GetExtension(file.Path + file.Filename);
-            var name = (user.ShowKnownFileExtensions) ? file.Name : file.Name.Remove(file.Name.LastIndexOf(".", StringComparison.Ordinal));
-            <tr>
-                <td data-id="@file.Id" class=""><input type="checkbox" class="marker-checkbox form-check-input" /></td>
-                <td>
-                    <span class="ficon">
-                        <a asp-route-path="@path" asp-page-handler="Download" class="ficon">
-                            @if (Startup.FileExtensionIcon.ContainsKey(extension))
-                            {
-                                <img src="@Startup.FileExtensionIcon[extension]" height="28" width="28"/>
-
-                            }
-                            else
-                            {
-                                <img src="https://raw.githubusercontent.com/microsoft/fluentui-system-icons/master/assets/Document/SVG/ic_fluent_document_28_regular.svg" height="28" width="28"/>
-
-                            }
-
-                            @name
-                        </a>
-                    </span>
-                </td>
-                <td>
-                    <a href="#"
-                       id="navbarDropdownMenuLink"
-                       role="button"
-                       data-mdb-toggle="dropdown"
-                       aria-expanded="false"
-                       style="line-height: 100%; vertical-align: middle;">
-                        <i class="fas fa-ellipsis-h"></i>
-
-                    </a>
-                    <ul class="dropdown-menu dropdown-menu-end "
-                        aria-labelledby="navbarDropdownMenuLink" style="background: #013a63 !important">
-                        <li>
-                            <a class="dropdown-item text-white nohover" asp-route-path="@path" asp-page-handler="Download" asp-route-forceDownload="true"><i class="fas fa-cloud-download-alt text-primary"></i> Download</a>
-                        </li>
-                        <li>
-                            <a class="dropdown-item text-white nohover" onclick="openRenameFileModal(@file.Id, '@file.Name', true)"><i class="far fa-edit text-secondary"></i> Rename</a>
-                        </li>
-                        <li>
-                            <a class="dropdown-item text-white nohover" asp-page-handler="DeleteFile" asp-route-path="@path" asp-route-fileName="@file.Name"><i class="fas fa-trash text-danger"></i> Delete</a>
-                        </li>
-
-                        @if (!isShared)
+                </ul>
+            </td>
+            <td>@FileMethods.BytesToString(info.GetSizeOfDirectory())</td>
+            <td>@info.LastWriteTime.ToShortDateString()</td>
+            <td></td>
+        </tr>
+    }
+    @foreach (var file in _db.Files.Where(o => o.UserId == user.Id && o.Path == currentPath).AsParallel())
+    {
+        var path = FileMethods.GetRelativePath(System.IO.Path.Combine(_env.ContentRootPath, "Data", user.Id.ToString()), System.IO.Path.Combine(file.Path, file.Filename));
+        var isShared = FileMethods.IsFileShared(path, user.Id);
+        var extension = System.IO.Path.GetExtension(file.Path + file.Filename);
+        var name = user.ShowKnownFileExtensions ? file.Name : file.Name.Remove(file.Name.LastIndexOf(".", StringComparison.Ordinal));
+        <tr>
+            <td data-id="@file.Id" class="">
+                <input type="checkbox" class="marker-checkbox form-check-input"/>
+            </td>
+            <td>
+                <span class="ficon">
+                    <a asp-route-path="@path" asp-page-handler="Download" class="ficon">
+                        @if (Startup.FileExtensionIcon.ContainsKey(extension))
                         {
-                            <li>
-                                <a class="dropdown-item text-white nohover" onclick="showShareModal('@path')" style="cursor: pointer"><i class="fas fa-share-alt-square text-cyan"></i> Share</a>
-                            </li>
+                            <img src="@Startup.FileExtensionIcon[extension]" height="28" width="28"/>
                         }
                         else
                         {
-                            <li>
-                                <a class="dropdown-item text-white nohover" asp-page-handler="StopShare" asp-route-path="@path"><i class="fas fa-share-alt-square text-warning"></i> Stop Share</a>
-                            </li>
+                            <img src="https://raw.githubusercontent.com/microsoft/fluentui-system-icons/master/assets/Document/SVG/ic_fluent_document_28_regular.svg" height="28" width="28"/>
                         }
 
-                    </ul>
-                </td>
-                <td>@FileMethods.BytesToString(file.Size)</td>
-                <td>@file.LastModified.ToShortDateString()</td>
-                <td>@(isShared ? Html.Raw($"<i class='fas fa-share-alt ml-1 link-primary' onclick='copy(\"{FileMethods.GetSharedLink(path, user,this.Context)}\")'></i>") : "")</td>
-            </tr>
+                        @name
+                    </a>
+                </span>
+            </td>
+            <td>
+                <a href="#"
+                   id="navbarDropdownMenuLink"
+                   role="button"
+                   data-mdb-toggle="dropdown"
+                   aria-expanded="false"
+                   style="line-height: 100%; vertical-align: middle;">
+                    <i class="fas fa-ellipsis-h"></i>
 
-        }
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end "
+                    aria-labelledby="navbarDropdownMenuLink" style="background: #013a63 !important">
+                    <li>
+                        <a class="dropdown-item text-white nohover" asp-route-path="@path" asp-page-handler="Download" asp-route-forceDownload="true"><i class="fas fa-cloud-download-alt text-primary"></i> Download</a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item text-white nohover" onclick="openRenameFileModal(@file.Id, '@file.Name', true)"><i class="far fa-edit text-secondary"></i> Rename</a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item text-white nohover" asp-page-handler="DeleteFile" asp-route-path="@path" asp-route-fileName="@file.Name"><i class="fas fa-trash text-danger"></i> Delete</a>
+                    </li>
+
+                    @if (!isShared)
+                    {
+                        <li>
+                            <a class="dropdown-item text-white nohover" onclick="showShareModal('@path')" style="cursor: pointer"><i class="fas fa-share-alt-square text-cyan"></i> Share</a>
+                        </li>
+                    }
+                    else
+                    {
+                        <li>
+                            <a class="dropdown-item text-white nohover" asp-page-handler="StopShare" asp-route-path="@path"><i class="fas fa-share-alt-square text-warning"></i> Stop Share</a>
+                        </li>
+                    }
+
+                </ul>
+            </td>
+            <td>@FileMethods.BytesToString(file.Size)</td>
+            <td>@file.LastModified.ToShortDateString()</td>
+            <td>@(isShared ? Html.Raw($"<i class='fas fa-share-alt ml-1 link-primary' onclick='copy(\"{FileMethods.GetSharedLink(path, user, Context)}\")'></i>") : "")</td>
+        </tr>
+    }
     </tbody>
 </table>

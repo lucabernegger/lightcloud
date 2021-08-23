@@ -55,7 +55,7 @@ namespace Cloud
                 KeyDerivationPrf.HMACSHA1,
                 10000,
                 256 / 8));
-            return new[] {hashed, Convert.ToBase64String(salt)};
+            return new[] { hashed, Convert.ToBase64String(salt) };
         }
 
         public static string GenerateRandomPassword()
@@ -64,10 +64,11 @@ namespace Cloud
             return new string(Enumerable.Repeat(chars, 5)
                 .Select(s => s[Random.Next(s.Length)]).ToArray());
         }
+
         public static string GenerateRandomCryptoString(int size = 32)
         {
             var rng = RandomNumberGenerator.Create();
-            byte[] tokenData = new byte[size];
+            var tokenData = new byte[size];
             rng.GetBytes(tokenData);
 
             return Convert.ToBase64String(tokenData);
@@ -81,7 +82,6 @@ namespace Cloud
 
             return null;
         }
-        
     }
 
     public static class UserManagerHelper

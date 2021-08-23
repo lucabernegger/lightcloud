@@ -52,22 +52,24 @@
         </div>
     </div>
 </div>
+
 @section Scripts
 {
     <script>
-        $(window).on('load', function() {
-            const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.has('error')) {
-                toastr.error(urlParams.get('error'));
-                window.history.replaceState(null, null, window.location.pathname);
+        $(window).on('load',
+            function() {
+                const urlParams = new URLSearchParams(window.location.search);
+                if (urlParams.has('error')) {
+                    toastr.error(urlParams.get('error'));
+                    window.history.replaceState(null, null, window.location.pathname);
 
-            }
-            if (urlParams.has('totp_req')) {
-                $("#totpModal").modal("show");
-                window.history.replaceState(null, null, window.location.pathname);
+                }
+                if (urlParams.has('totp_req')) {
+                    $("#totpModal").modal("show");
+                    window.history.replaceState(null, null, window.location.pathname);
 
-            }
-        });
-        
+                }
+            });
+
     </script>
 }
