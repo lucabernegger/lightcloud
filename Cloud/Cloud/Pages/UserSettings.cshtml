@@ -55,7 +55,7 @@
     <div class="card-body text-white">
 
         <div class="form-group">
-            <label for="showFileExtentions">Enable/Disable 2 Factor Authentication (mobile Apps) to protect your account.</label>
+            <p>Enable/Disable 2 Factor Authentication (mobile Apps) to protect your account.</p>
             @if (!user.TotpActive)
             {
                 <form method="post" asp-page-handler="ActivateTotp">

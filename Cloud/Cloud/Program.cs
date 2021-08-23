@@ -16,7 +16,9 @@ namespace Cloud
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();
+#if !DEBUG
                     webBuilder.UseUrls("http://*:5570");
+#endif
                 });
         }
     }
