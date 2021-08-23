@@ -260,7 +260,7 @@
 
         function loadFiles() {
             $.get("/Index", { handler: "FilesPartial", path: "@Model.Path" }).done(function(data) {
-                $('#files_table').html(data)
+                $('#files_table').html(data);
                 $(".marker-checkbox").change(function() {
                     if (this.checked) {
                         checkedItems.push($(this).parent().attr("data-id"));
@@ -289,7 +289,7 @@
                         $("#markbuttons button").attr('disabled', true);
                     }
 
-                })
+                });
             });
         }
 

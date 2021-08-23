@@ -59,15 +59,6 @@ namespace Cloud
             return size;
         }
         
-        public static string Sha256(string text)
-        {
-            var crypt = new SHA256Managed();
-            var hash = string.Empty;
-            var crypto = crypt.ComputeHash(Encoding.ASCII.GetBytes(text));
-            foreach (var theByte in crypto) hash += theByte.ToString("x2");
-            return hash;
-        }
-
         public static bool IsFileShared(string path, int userid)
         {
             using var db = new ApplicationDbContext();
@@ -83,18 +74,22 @@ namespace Cloud
             var serverComponent = ctx.Session.GetString("ServerFileKeyComponent");
             var key = user.FilePassword.Decrypt(clientComponent.Decrypt(serverComponent));
             var dbshare = db.Shares.FirstOrDefault(o => o.File == p);
-            return Startup.Settings.BaseDomain + "Share/download?hash=" + UrlEncoder.Default.Encode(dbshare?.ShareLink)+"&p="+ UrlEncoder.Default.Encode(dbshare.Key.Decrypt(key));
+            if (dbshare != null)
+                return Startup.Settings.BaseDomain + "Share/download?hash=" +
+                       UrlEncoder.Default.Encode(dbshare?.ShareLink) + "&p=" +
+                       UrlEncoder.Default.Encode(dbshare.Key.Decrypt(key));
+            return String.Empty;
         }
         public static string GetRelativePath(string fromPath, string toPath)
         {
             if (string.IsNullOrEmpty(fromPath))
             {
-                throw new ArgumentNullException("fromPath");
+                throw new ArgumentNullException(nameof(fromPath));
             }
 
             if (string.IsNullOrEmpty(toPath))
             {
-                throw new ArgumentNullException("toPath");
+                throw new ArgumentNullException(nameof(toPath));
             }
 
             Uri fromUri = new Uri(AppendDirectorySeparatorChar(fromPath));
@@ -129,11 +124,9 @@ namespace Cloud
         }
         public static Byte[] BitmapToBytesCode(Bitmap image)
         {
-            using (MemoryStream stream = new MemoryStream())
-            {
-                image.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
-                return stream.ToArray();
-            }
+            using var stream = new MemoryStream();
+            image.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
+            return stream.ToArray();
         }
     }
 }

@@ -236,7 +236,7 @@ namespace Cloud
                 };
                 
                 db.Files.Add(f);
-                await db.SaveChangesAsync();
+                await db.SaveChangesAsync(cs);
                 var k1 = clientComponent.Decrypt(serverComponent);
                 var key = user.FilePassword.Decrypt(k1);
                 var bytesToEnc = stream.ReadToEnd();
@@ -245,7 +245,7 @@ namespace Cloud
                 k1 = null;
                 await stream.DisposeAsync();
                 GC.Collect();
-                File.WriteAllBytes(filepath + "/" + meta["filename"].GetString(Encoding.UTF8), bytes);
+                await File.WriteAllBytesAsync(filepath + "/" + meta["filename"].GetString(Encoding.UTF8), bytes, cs);
 
             }
 

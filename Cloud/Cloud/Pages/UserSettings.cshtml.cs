@@ -34,10 +34,10 @@ namespace Cloud.Pages
         {
             if (TotpSecret is not null)
             {
-                QRCodeGenerator _qrCode = new QRCodeGenerator();
-                QRCodeData _qrCodeData = _qrCode.CreateQrCode("otpauth://totp/Lightcloud?secret=" + TotpSecret, QRCodeGenerator.ECCLevel.Q);
-                QRCode qrCode = new QRCode(_qrCodeData);
-                Bitmap qrCodeImage = qrCode.GetGraphic(20);
+                var qrGen = new QRCodeGenerator();
+                var qrCodeData = qrGen.CreateQrCode("otpauth://totp/Lightcloud?secret=" + TotpSecret, QRCodeGenerator.ECCLevel.Q);
+                var qrCode = new QRCode(qrCodeData);
+                var qrCodeImage = qrCode.GetGraphic(20);
                 ViewData.Add("qr", Convert.ToBase64String(FileMethods.BitmapToBytesCode(qrCodeImage)));
             }
             

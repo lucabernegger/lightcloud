@@ -148,7 +148,7 @@ namespace Cloud.Pages
                 {
                     ExpiryDate = expiryDate,
                     File = @$"{user.Id}/" + path,
-                    ShareLink = FileMethods.Sha256(path),
+                    ShareLink = path.Sha512(),
                     Key = sKey.Encrypt(key)
                 };
                 _db.Shares.Add(share);

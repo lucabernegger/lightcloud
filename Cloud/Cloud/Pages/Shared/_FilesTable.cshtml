@@ -9,16 +9,7 @@
 @{
     var user = await User.GetUser();
     string currentPath = String.Empty;
-    if (!string.IsNullOrEmpty(Model.Path))
-    {
-        currentPath = System.IO.Path.Combine(_env.ContentRootPath, "Data", user.Id.ToString(), Model.Path);
-
-    }
-    else
-    {
-        currentPath = System.IO.Path.Combine(_env.ContentRootPath, "Data", user.Id.ToString());
-
-    }
+    currentPath = !string.IsNullOrEmpty(Model?.Path) ? (string)System.IO.Path.Combine(_env.ContentRootPath, "Data", user.Id.ToString(), Model.Path) : System.IO.Path.Combine(_env.ContentRootPath, "Data", user.Id.ToString());
     if (currentPath.Last() != '/')
     {
         currentPath += '/';
@@ -89,7 +80,7 @@
             var path = Cloud.FileMethods.GetRelativePath(System.IO.Path.Combine(_env.ContentRootPath , "Data" , user.Id.ToString()), System.IO.Path.Combine(file.Path,file.Filename));
             var isShared = FileMethods.IsFileShared(path, user.Id);
             var extension = System.IO.Path.GetExtension(file.Path + file.Filename);
-            var name = (user.ShowKnownFileExtensions) ? file.Name : file.Name.Remove(file.Name.LastIndexOf("."));
+            var name = (user.ShowKnownFileExtensions) ? file.Name : file.Name.Remove(file.Name.LastIndexOf(".", StringComparison.Ordinal));
             <tr>
                 <td data-id="@file.Id" class=""><input type="checkbox" class="marker-checkbox form-check-input" /></td>
                 <td>
